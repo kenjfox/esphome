@@ -705,19 +705,19 @@ sensor:
   - platform: mpu6050
     address: 0x68
     accel_x:
-      name: 'MPU6050 Accel X'
+      name: 'mpu6050_driver Accel X'
     accel_y:
-      name: 'MPU6050 Accel Y'
+      name: 'mpu6050_driver Accel Y'
     accel_z:
-      name: 'MPU6050 Accel z'
+      name: 'mpu6050_driver Accel z'
     gyro_x:
-      name: 'MPU6050 Gyro X'
+      name: 'mpu6050_driver Gyro X'
     gyro_y:
-      name: 'MPU6050 Gyro Y'
+      name: 'mpu6050_driver Gyro Y'
     gyro_z:
-      name: 'MPU6050 Gyro z'
+      name: 'mpu6050_driver Gyro z'
     temperature:
-      name: 'MPU6050 Temperature'
+      name: 'mpu6050_driver Temperature'
     i2c_id: i2c_bus
   - platform: ms5611
     temperature:

@@ -127,3 +127,4 @@ tests/.esphome/
 
 sdkconfig.*
 !sdkconfig.defaults
+sdkconfig

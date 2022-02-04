@@ -11,6 +11,7 @@ from esphome.const import (
     ICON_SCREEN_ROTATION,
     UNIT_DEGREE_PER_SECOND,
     UNIT_CELSIUS,
+    UNIT_DEGREES,
 )
 
 DEPENDENCIES = ["i2c"]
@@ -21,6 +22,9 @@ CONF_ACCEL_Z = "accel_z"
 CONF_GYRO_X = "gyro_x"
 CONF_GYRO_Y = "gyro_y"
 CONF_GYRO_Z = "gyro_z"
+CONF_YAW = "yaw"
+CONF_PITCH = "pitch"
+CONF_ROLL = "roll"
 
 mpu6050_ns = cg.esphome_ns.namespace("mpu6050")
 MPU6050Component = mpu6050_ns.class_(
@@ -45,6 +49,12 @@ temperature_schema = sensor.sensor_schema(
     device_class=DEVICE_CLASS_TEMPERATURE,
     state_class=STATE_CLASS_MEASUREMENT,
 )
+tilt_schema = sensor.sensor_schema(
+    unit_of_measurement=UNIT_DEGREES,
+    icon=ICON_SCREEN_ROTATION,
+    accuracy_decimals=2,
+    state_class=STATE_CLASS_MEASUREMENT,
+)
 
 CONFIG_SCHEMA = (
     cv.Schema(
@@ -57,16 +67,21 @@ CONFIG_SCHEMA = (
             cv.Optional(CONF_GYRO_Y): gyro_schema,
             cv.Optional(CONF_GYRO_Z): gyro_schema,
             cv.Optional(CONF_TEMPERATURE): temperature_schema,
+            cv.Optional(CONF_YAW): tilt_schema,
+            cv.Optional(CONF_PITCH): tilt_schema,
+            cv.Optional(CONF_ROLL): tilt_schema,
         }
     )
-    .extend(cv.polling_component_schema("60s"))
+    .extend(cv.polling_component_schema("100ms"))
     .extend(i2c.i2c_device_schema(0x68))
 )
 
 
 async def to_code(config):
+
     var = cg.new_Pvariable(config[CONF_ID])
     await cg.register_component(var, config)
+
     await i2c.register_i2c_device(var, config)
 
     for d in ["x", "y", "z"]:
@@ -82,3 +97,12 @@ async def to_code(config):
     if CONF_TEMPERATURE in config:
         sens = await sensor.new_sensor(config[CONF_TEMPERATURE])
         cg.add(var.set_temperature_sensor(sens))
+    if CONF_YAW in config:
+        sens = await sensor.new_sensor(config[CONF_YAW])
+        cg.add(var.set_yaw_sensor(sens))
+    if CONF_PITCH in config:
+        sens = await sensor.new_sensor(config[CONF_PITCH])
+        cg.add(var.set_pitch_sensor(sens))
+    if CONF_ROLL in config:
+        sens = await sensor.new_sensor(config[CONF_ROLL])
+        cg.add(var.set_roll_sensor(sens))

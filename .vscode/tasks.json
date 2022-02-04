@@ -8,6 +8,16 @@
       "problemMatcher": []
     },
     {
+      "label": "build",
+      "type": "shell",
+      "command": "python3 setup.py install && esphome compile ../esp_home_projects/van/van.yaml",
+      "problemMatcher": [],
+      "group": {
+        "kind": "build",
+        "isDefault": true
+      }
+    },
+    {
       "label": "clang-tidy",
       "type": "shell",
       "command": "./script/clang-tidy",

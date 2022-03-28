@@ -16,7 +16,7 @@ namespace esphome {
     /// This class provides an easy way to map fixed voltages to tank levels
     class TankLevelSensor :  public sensor::Sensor, public PollingComponent {
     public:
-      void set_output_pin (InternalGPIOPin *pin) { this->output_pin_ = pin; }
+      void set_output_pin (GPIOPin *pin) ;
       void set_margin_percent(float v);
       void set_tank_capacity(float v);
       void setup() override;
@@ -28,8 +28,9 @@ namespace esphome {
       void set_adc(adc::ADCSensor *adc_sensor) { this->adc_sensor_ = adc_sensor;}
       void add_level(float voltage, float percent_full);
     protected:
+      float get_tank_level(float v);
       std::vector<TankLevel> levels_{};
-      InternalGPIOPin *output_pin_ {nullptr};
+      GPIOPin *output_pin_ {nullptr};
       //GPIOPin *sense_pin_ {nullptr};
       sensor::Sensor *level_sensor_;
       sensor::Sensor *capacity_sensor_;

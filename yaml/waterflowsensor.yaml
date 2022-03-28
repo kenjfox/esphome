@@ -1,0 +1,15 @@
+sensor:
+# water flow sensor
+  - platform: pulse_counter
+    name: "Water Flow Rate"
+    id: water_flow_meter
+    pin: 18
+    update_interval: 1s
+    filters:
+    - lambda: return (x * 60 / 480)  ;
+    unit_of_measurement: "L/min"  
+    total:
+      unit_of_measurement: "L"
+      name: "Water Used"
+      filters:
+        - multiply: 0.01666666666

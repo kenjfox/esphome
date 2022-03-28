@@ -1,0 +1,66 @@
+#sensors
+sensor:
+  - platform: adc
+    pin: 34
+    id: freshwater_adc
+    name: "Freshwater Tank ADC"
+    attenuation: 11db
+    update_interval: never
+
+  - platform: tank_level_sensor
+    id: freshwater_level_sensor
+    name: "Freshwater Tank Level"
+    adc_sensor: freshwater_adc
+    tank_capacity: 25.0
+    output_pin: 32
+    margin_percent: .10
+    update_interval: 5s
+    percent_full:
+      id: sensor_percent
+      name: "Freshwater Percent Left"
+    amount_left:
+      id: sensor_amt_left
+      name: "Freshwater Remaining"
+    tank_levels:
+      - voltage: 1.15
+        percent_full: 0
+      - voltage: 1.46
+        percent_full: 25
+      - voltage: 1.58
+        percent_full: 50
+      - voltage: 1.75
+        percent_full: 75
+      - voltage: 2.1
+        percent_full: 100
+  - platform: adc
+    pin: 35
+    id: graywater_adc
+    name: "Graywater Tank ADC"
+    attenuation: 11db
+    update_interval: never
+  - platform: tank_level_sensor
+    id: graywater_level_sensor
+    name: "Graywater Tank Level"
+    adc_sensor: graywater_adc
+    tank_capacity: 20.0
+    output_pin: 33
+    margin_percent: .10
+    update_interval: 5s
+    percent_full:
+      id: sensor_percent_grey
+      name: "Graywater Percent Full"
+    amount_left:
+      id: sensor_amt_left_grey
+      name: "Greywater Used"
+    tank_levels:
+      - voltage: .9
+        percent_full: 0
+      - voltage: 1.4
+        percent_full: 25
+      - voltage: 1.5
+        percent_full: 50
+      - voltage: 1.74
+        percent_full: 75
+      - voltage: 2.1
+        percent_full: 100
+ 

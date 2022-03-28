@@ -1,0 +1,99 @@
+
+wifi:
+  ssid: "vango-net"
+  password: $password
+  fast_connect: on
+  power_save_mode: none
+  # Enable fallback hotspot (captive portal) in case wifi connection fails
+  ap:
+    ssid: "vango hardware hotspot"
+
+
+time:
+  - platform: homeassistant
+
+#sensors
+sensor:
+  - platform: wifi_signal
+    name: "${devicename} WiFi Signal Sensor"
+    id: rssi_sensor
+    update_interval: 15s
+
+  - platform: template
+    name: "Wifi Quality"
+    unit_of_measurement: "%"
+    accuracy_decimals: 0
+    icon: "mdi:wifi"
+    update_interval: 15s
+    lambda: |-
+        int quality;
+        const int rssi = id(rssi_sensor).state;
+          if (rssi <= -100) { quality = 0;}
+          else if (rssi >= -50)
+          {  quality = 100; }
+          else
+          {  quality = 2 * (rssi + 100); }
+          return quality;
+
+  - platform: uptime
+    name: "${devicename} Uptime"
+    id: uptime_s
+    update_interval: 5s
+
+  
+
+text_sensor:
+  - platform: template
+    name: "Config Version"
+    icon: mdi:information-outline
+    lambda: |-
+      return {"${config_version}"};
+
+  - platform: version
+    name: "Esphome Version"
+    icon: mdi:information-outline
+
+  - platform: wifi_info
+    ip_address:
+      name: "${devicename} IP Address"
+      icon: mdi:ip
+    ssid:
+      name: "${devicename} Connected SSID"
+      icon: mdi:wifi
+    bssid:
+      name: "${devicename} Connected BSSID"
+    mac_address:
+      name: "${devicename} Mac Wifi Address"
+
+  - platform: template
+    name: "${devicename} Uptime (formatted)"
+    lambda: |-
+          uint32_t dur = id(uptime_s).state;
+          uint dys = 0;
+          uint hrs = 0;
+          uint mnts = 0;
+          if (dur > 86399) {
+            dys = trunc(dur / 86400);
+            dur = dur - (dys * 86400);
+          }
+          if (dur > 3599) {
+            hrs = trunc(dur / 3600);
+            dur = dur - (hrs * 3600);
+          }
+          if (dur > 59) {
+            mnts = trunc(dur / 60);
+            dur = dur - (mnts * 60);
+          }
+          char buffer[22];
+          sprintf(buffer, "%ud %02uh %02um %02us", dys, hrs, mnts, dur);
+          return {buffer};
+    icon: mdi:clock-start
+    update_interval: 5s
+ 
+switch:
+  - platform: restart
+    icon: mdi:reload-alert
+    name: "${devicename} Restart"
+
+
+ 

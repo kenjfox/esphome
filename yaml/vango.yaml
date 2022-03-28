@@ -1,0 +1,61 @@
+substitutions:
+  name: "vango"
+  lower_devicename: $name
+  devicename: "Vango"
+  config_version: "v2022.03.07.001"
+  # wifi_fast_connect: "false"
+  # wifi_reboot_timeout: 0s
+  accuracy: "2"
+  password: "govango!"
+  device_verbose_name: "Vango integration hardware"
+
+esphome:
+  name: $name
+    
+esp32:
+  board: esp32dev
+  variant: esp32
+  framework:
+    type: esp-idf
+    version: recommended
+
+# Enable logging
+logger:
+  level: DEBUG
+  logs:
+    sensor: WARN
+    gpio.binary_sensor: DEBUG
+    light: DEBUG
+    mpu6050: WARN
+    pulse_counter: WARN
+    tank_level_sensor: WARN
+    tank_level.sensor: WARN
+    text_sensor: WARN
+
+# Enable Home Assistant API
+api:
+  password: $password
+
+ota:
+  password: $password
+
+i2c:
+   - id: bus_a
+     sda: 12
+     scl: 14
+     scan: true
+     frequency: 50kHz
+
+
+packages:
+  system: !include system.yaml
+  dallas: !include dallas.yaml
+  mpu6050: !include mpu6050.yaml
+  bme280.yaml: !include bme280.yaml
+  tanklevelsensor: !include tanklevelsensor.yaml
+  waterflowsensor: !include waterflowsensor.yaml
+  gpio: !include gpio.yaml
+  victron: !include victron_smartshunt.yaml
+
+
+

@@ -1,0 +1,23 @@
+# dallas.yaml - temp sensors
+dallas:
+  - pin: 23
+sensor:
+# Temp Sensors
+  - platform: dallas
+    address: 0x28375875D0013C34
+    name: "Coolant Temp"
+  - platform: dallas
+    address: 0x28900475D0013C59
+    name: "Garage Temp"
+  - platform: dallas
+    address: 0x28F48175D0013C5F
+    name: "Outside Temp"
+  - platform: dallas
+    address: 0x281319F30C0000D1
+    name: "Freshwater Tank Temp"
+  - platform: dallas
+    address: 0x28BC0475D0013C92
+    name: "Hot Water Temp"
+  - platform: dallas
+    address: 0x28973C75D0013C66
+    name: "House Battery Temp"

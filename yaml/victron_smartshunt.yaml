@@ -1,0 +1,129 @@
+ uart:
+  id: uart0
+  tx_pin: 25
+  rx_pin: 26
+  baud_rate: 19200
+  stop_bits: 1
+  data_bits: 8
+  parity: NONE
+  rx_buffer_size: 256
+
+ victron_smart_shunt:
+  uart_id: uart0
+
+ sensor:
+  - platform: victron_smart_shunt
+    battery_voltage:
+      name: "Battery Voltage"
+      id: bv
+      accuracy_decimals: ${accuracy}
+
+    battery_current:
+      name: "Battery Current"
+      id: bc
+      accuracy_decimals: ${accuracy}
+
+    fw_version:
+      name: "ShartShunt Firmware Version"
+      id: fw
+
+    pid:
+      name: "SmartShunt PID"
+      id: pid
+
+    instanteneous_power:
+      name: "Instanteneous Power"
+      id: instantaneous_power
+      accuracy_decimals: ${accuracy}
+
+    time_to_go:
+      name: "Time to Full Charge"
+      id: time_to_go
+
+    consumed_amp_hours:
+      name: "Consumed Amp Hours"
+      id: consumed_amp_hours
+      unit_of_measurement: Ah
+      accuracy_decimals: ${accuracy}
+
+    min_battery_voltage:
+      name: "Min Battery Voltage"
+      id: min_battery_voltage
+      accuracy_decimals: ${accuracy}
+
+    max_battery_voltage:
+      name: "Max Battery Voltage"
+      id: max_battery_voltage
+      accuracy_decimals: ${accuracy}
+
+    amount_of_charged:
+      name: "Amount of Charge"
+      id: amount_of_charged
+      filters:
+        - multiply: 0.001
+      unit_of_measurement: kWh
+      accuracy_decimals: ${accuracy}
+
+    bmv_text:
+      name: "Product"
+      id: bmv_pid
+
+    last_full_charge:
+      name: "Time Since Last Full Charge"
+      id: last_full_charge
+
+    deepest_discharge:
+      name: "Depth of Deepest Discharge"
+      id: deepest_discharge
+      unit_of_measurement: Ah
+      accuracy_decimals: ${accuracy}
+
+    last_discharge:
+      name: "Depth of Last Discharge"
+      id: last_discharge
+      unit_of_measurement: Ah
+      accuracy_decimals: ${accuracy}
+
+    discharged_energy:
+      name: "Amount of Discharged Energy"
+      id: discharged_energy
+      filters:
+        - multiply: 0.001
+      unit_of_measurement: kWh
+      accuracy_decimals: ${accuracy}
+
+    state_of_charge:
+      id: state_of_charge
+      name: "SoC"
+
+    alarm_reason:
+      id: alarm_reason
+      name: "Alarm Reason Code"
+
+    alarm_reason_text:
+      id: alarm_reason_text
+      name: "Alarm Reason Text"
+
+    depth_of_average_discharge:
+      id:  depth_of_average_discharge
+      name: "Depth of Average Discharge"
+
+    cumulative_amp_hours_drawn:
+      id: cumulative_amp_hours_drawn
+      name: "Cumulative Amp Hours Drawn"
+      accuracy_decimals: ${accuracy}
+
+    number_of_automatic_synchronizations:
+      id: number_of_automatic_synchronizations
+      name: "# of Automatic Sychronizations"
+      accuracy_decimals: 0
+
+    number_of_low_main_voltage_alarms:
+      id: number_of_low_main_voltage_alarms
+      name: "# of Low Voltage Alarms"
+      accuracy_decimals: 0
+
+    number_of_high_main_voltage_alarms:
+      id: number_of_high_main_voltage_alarms
+      name: "# of High Voltage Alarms"
+      accuracy_decimals: 0

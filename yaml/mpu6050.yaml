@@ -1,0 +1,38 @@
+sensor:
+# gyro/accel
+  - platform: mpu6050
+    id: gyro_accel
+    address: 0x68
+    i2c_id: bus_a
+    update_interval: 1s
+    accel_x:
+      id: "accel_x"
+      name: "MPU6050 Accel X"
+    accel_y:
+      name: "MPU6050 Accel Y"
+    accel_z:
+      name: "MPU6050 Accel z"
+    gyro_x:
+      name: "MPU6050 Gyro X"
+    gyro_y:
+      name: "MPU6050 Gyro Y"
+    gyro_z:
+      name: "MPU6050 Gyro z"
+    temperature:
+      name: "MPU6050 Temperature"
+    yaw:
+      name: "MPU6050 Yaw"
+    pitch:
+      name: "MPU6050 Pitch"
+    roll:
+      name: "MPU6050 Roll"
+ 
+button:
+  - platform: template
+    id: btn_calibrate
+    name: "Calibrate Tilt Sensor"
+    on_press:
+      then:
+      - logger.log: "Button Pressed"
+      - lambda: |-
+          id(gyro_accel).calibrate(true,true);

@@ -19,5 +19,5 @@ sensor:
     address: 0x28BC0475D0013C92
     name: "Hot Water Temp"
   - platform: dallas
-    address: 0x28973C75D0013C66
+    address: 0x663c01d0753c9728
     name: "House Battery Temp"

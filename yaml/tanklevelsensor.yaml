@@ -22,9 +22,9 @@ sensor:
       id: sensor_amt_left
       name: "Freshwater Remaining"
     tank_levels:
-      - voltage: 1.15
+      - voltage: 1.20
         percent_full: 0
-      - voltage: 1.46
+      - voltage: 1.35
         percent_full: 25
       - voltage: 1.58
         percent_full: 50

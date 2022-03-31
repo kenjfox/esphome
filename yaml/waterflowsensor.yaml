@@ -3,7 +3,7 @@ sensor:
   - platform: pulse_counter
     name: "Water Flow Rate"
     id: water_flow_meter
-    pin: 18
+    pin: 39
     update_interval: 1s
     filters:
     - lambda: return (x * 60 / 480)  ;

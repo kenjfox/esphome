@@ -9,7 +9,7 @@ switch:
     id: sw_battery_heater
     pin:
       sx1509: sx1509_hub
-      number: 0
+      number: 7
       mode:
         output: true
       inverted: true
@@ -17,7 +17,7 @@ switch:
     name: "Diesel Heater"
     pin:
       sx1509: sx1509_hub
-      number: 1
+      number: 6
       mode:
         output: true
       inverted: true
@@ -25,7 +25,7 @@ switch:
     name: "Audio"
     pin:
       sx1509: sx1509_hub
-      number: 2
+      number: 5
       mode:
         output: true
       inverted: true
@@ -34,7 +34,7 @@ switch:
     id: sw_shower_fan
     pin:
       sx1509: sx1509_hub
-      number: 3
+      number: 4
       mode:
         output: true
       inverted: true
@@ -42,7 +42,7 @@ switch:
     name: "Coolant Circ Pump"
     pin:
       sx1509: sx1509_hub
-      number: 4
+      number: 3
       mode:
         output: true
       inverted: true
@@ -52,7 +52,7 @@ switch:
     interlock: &interlock_group [heater_fan_low, heater_fan_medium, heater_fan_high]
     pin:
       sx1509: sx1509_hub
-      number: 5
+      number: 2
       mode:
         output: true
       inverted: true
@@ -62,7 +62,7 @@ switch:
     interlock: *interlock_group
     pin:
       sx1509: sx1509_hub
-      number: 6
+      number: 1
       mode:
           output: true
       inverted: true
@@ -72,7 +72,7 @@ switch:
     interlock: *interlock_group
     pin:
       sx1509: sx1509_hub
-      number: 7
+      number: 0
       mode:
         output: true
       inverted: true
@@ -104,7 +104,7 @@ switch:
       number: 10
       mode:
         output: true
-      inverted: true
+      
     on_turn_on:
     - delay: 10s
     - switch.turn_off: sw_valve_hw_bypass
@@ -123,47 +123,61 @@ output:
     sx1509_id: sx1509_hub
     id: pwm_1
     pin: 12
+    inverted: true
+
   - platform: sx1509
     sx1509_id: sx1509_hub
     id: pwm_2
     pin: 13
+    inverted: true
+
   - platform: sx1509
     sx1509_id: sx1509_hub
     id: pwm_3
     pin: 14
+    inverted: true
+
   - platform: sx1509
     sx1509_id: sx1509_hub
     id: pwm_4
     pin: 15
+    inverted: true
 #esp32 gpio
   - platform: ledc
     frequency: "1220Hz"
     pin: 19
     id: pwm_5
+    
+
   - platform: ledc
     frequency: "1220Hz"
     pin: 18
     id: pwm_6
+    
+
   - platform: ledc
     frequency: "1220Hz"
     pin: 5
     id: pwm_7
+    
+
   - platform: ledc
     frequency: "1220Hz"
     pin: 15
     id: pwm_8
+    
    
 light: 
   - platform: monochromatic
-    name: "Lights Bed"
+    name: "Lights Kitchen"
     id: light1
     output: pwm_1
   - platform: monochromatic
-    name: "Lights Garage"
+    name: "Lights Porch"
     id: light2
     output: pwm_2
   - platform: monochromatic
-    name: "Lights Bath"
+    name: "Lights 3"
     id: light3
     output: pwm_3
   - platform: monochromatic
@@ -172,19 +186,19 @@ light:
     output: pwm_4
 
   - platform: monochromatic
-    name: "Lights Kitchen"
+    name: "Lights 5"
     id: light5
     output: pwm_5
   - platform: monochromatic
-    name: "Lights Porch"
+    name: "Lights Shower"
     id: light6
     output: pwm_6
   - platform: monochromatic
-    name: "Light 7"
+    name: "Lights Garage"
     id: light7
     output: pwm_7
   - platform: monochromatic
-    name: "Light 8"
+    name: "Lights Bed"
     id: light8
     output: pwm_8
 
@@ -193,7 +207,7 @@ binary_sensor:
     name: "Button Kitchen Outside"
     id: btn_1
     pin: 
-      number: 27
+      number: 13
       mode:
         input: true
         pullup: true
@@ -206,19 +220,19 @@ binary_sensor:
       then:
       - if:
           condition:
-            - light.is_off: light6
+            - light.is_off: light2
           then:
             - light.turn_on:
-                id: light6
+                id: light2
                 brightness: 1.0
           else:
-            - light.turn_off: light6
+            - light.turn_off: light2
 
     on_press:
       then:
         - if:
             condition:
-              light.is_off: light6
+              light.is_off: light2
             then:
               - delay: 0.5s
               - while:
@@ -226,7 +240,7 @@ binary_sensor:
                     binary_sensor.is_on: btn_1
                   then:
                     - light.dim_relative:
-                        id: light6
+                        id: light2
                         relative_brightness: 5%
                         transition_length: 0.1s
                     - delay: 0.1s
@@ -237,10 +251,10 @@ binary_sensor:
                   condition:
                     and:
                       - binary_sensor.is_on: btn_1
-                      - light.is_on: light6
+                      - light.is_on: light2
                   then:
                     - light.dim_relative:
-                        id: light6
+                        id: light2
                         relative_brightness: -5%
                         transition_length: 0.1s
                     - delay: 0.1s
@@ -250,7 +264,7 @@ binary_sensor:
     name: "Button Kitchen Master"
     id: btn_2
     pin: 
-      number: 13
+      number: 21
       mode:
         input: true
         pullup: true
@@ -264,29 +278,30 @@ binary_sensor:
       max_length: 350ms
       then:
       - if:
-          condition:
+          condition:  # change to 1  4 6 8
+            or:
             - light.is_off: light1
-            - light.is_off: light2
-            - light.is_off: light3
             - light.is_off: light4
+            - light.is_off: light6
+            - light.is_off: light8
           then:
             - light.turn_on:
                 id: light1
                 brightness: 1.0
             - light.turn_on:
-                id: light2
-                brightness: 1.0
-            - light.turn_on:
-                id: light3
-                brightness: 1.0
-            - light.turn_on:
                 id: light4
+                brightness: 1.0
+            - light.turn_on:
+                id: light6
+                brightness: 1.0
+            - light.turn_on:
+                id: light8
                 brightness: 1.0
           else:
             - light.turn_off: light1
-            - light.turn_off: light2
-            - light.turn_off: light3
             - light.turn_off: light4
+            - light.turn_off: light6
+            - light.turn_off: light8
 
     on_press:
       then:
@@ -305,17 +320,17 @@ binary_sensor:
                         transition_length: 0.1s
                     - delay: 0.1s
                     - light.dim_relative:
-                        id: light2
-                        relative_brightness: 5%
-                        transition_length: 0.1s
-                    - delay: 0.1s
-                    - light.dim_relative:
-                        id: light3
-                        relative_brightness: 5%
-                        transition_length: 0.1s
-                    - delay: 0.1s
-                    - light.dim_relative:
                         id: light4
+                        relative_brightness: 5%
+                        transition_length: 0.1s
+                    - delay: 0.1s
+                    - light.dim_relative:
+                        id: light6
+                        relative_brightness: 5%
+                        transition_length: 0.1s
+                    - delay: 0.1s
+                    - light.dim_relative:
+                        id: light8
                         relative_brightness: 5%
                         transition_length: 0.1s
                     - delay: 0.1s
@@ -333,17 +348,17 @@ binary_sensor:
                         transition_length: 0.1s
                     - delay: 0.1s
                     - light.dim_relative:
-                        id: light2
-                        relative_brightness: -5%
-                        transition_length: 0.1s
-                    - delay: 0.1s
-                    - light.dim_relative:
-                        id: light3
-                        relative_brightness: -5%
-                        transition_length: 0.1s
-                    - delay: 0.1s
-                    - light.dim_relative:
                         id: light4
+                        relative_brightness: -5%
+                        transition_length: 0.1s
+                    - delay: 0.1s
+                    - light.dim_relative:
+                        id: light6
+                        relative_brightness: -5%
+                        transition_length: 0.1s
+                    - delay: 0.1s
+                    - light.dim_relative:
+                        id: light8
                         relative_brightness: -5%
                         transition_length: 0.1s
                     - delay: 0.1s
@@ -364,23 +379,23 @@ binary_sensor:
       then:
       - if:
           condition:
+            - light.is_off: light1
             - light.is_off: light4
-            - light.is_off: light5
           then:
             - light.turn_on:
-                id: light4
+                id: light1
                 brightness: 1.0
             - light.turn_on:
-                id: light5
+                id: light4
                 brightness: 1.0 
           else:
+            - light.turn_off: light1
             - light.turn_off: light4
-            - light.turn_off: light5
     on_press:
       then:
         - if:
             condition:
-              light.is_off: light4
+              light.is_off: light1
             then:
               - delay: 0.5s
               - while:
@@ -388,11 +403,11 @@ binary_sensor:
                     binary_sensor.is_on: btn_3
                   then:
                     - light.dim_relative:
-                        id: light4
+                        id: light1
                         relative_brightness: 5%
                         transition_length: 0.1s
                     - light.dim_relative:
-                        id: light5
+                        id: light4
                         relative_brightness: 5%
                         transition_length: 0.1s
                     - delay: 0.1s
@@ -403,14 +418,14 @@ binary_sensor:
                   condition:
                     and:
                       - binary_sensor.is_on: btn_3
-                      - light.is_on: light4
+                      - light.is_on: light1
                   then:
                     - light.dim_relative:
-                        id: light4
+                        id: light1
                         relative_brightness: -5%
                         transition_length: 0.1s
                     - light.dim_relative:
-                        id: light5
+                        id: light4
                         relative_brightness: -5%
                         transition_length: 0.1s
                     - delay: 0.1s
@@ -419,7 +434,7 @@ binary_sensor:
     name: "Button Shower Light"
     id: btn_4
     pin: 
-      number: 21
+      number: 4
       mode:
         input: true
         pullup: true
@@ -432,18 +447,18 @@ binary_sensor:
       then:
       - if:
           condition:
-            - light.is_off: light3
+            - light.is_off: light6
           then:
             - light.turn_on:
-                id: light3
+                id: light6
                 brightness: 1.0
           else:
-            - light.turn_off: light3
+            - light.turn_off: light6
     on_press:
       then:
         - if:
             condition:
-              light.is_off: light3
+              light.is_off: light6
             then:
               - delay: 0.5s
               - while:
@@ -451,7 +466,7 @@ binary_sensor:
                     binary_sensor.is_on: btn_4
                   then:
                     - light.dim_relative:
-                        id: light3
+                        id: light6
                         relative_brightness: 5%
                         transition_length: 0.1s
                     - delay: 0.1s
@@ -462,10 +477,10 @@ binary_sensor:
                   condition:
                     and:
                       - binary_sensor.is_on: btn_4
-                      - light.is_on: light3
+                      - light.is_on: light6
                   then:
                     - light.dim_relative:
-                        id: light3
+                        id: light6
                         relative_brightness: -5%
                         transition_length: 0.1s
                     - delay: 0.1s
@@ -473,7 +488,7 @@ binary_sensor:
     name: "Button Shower Fan"
     id: btn_5
     pin: 
-      number: 4
+      number: 27
       mode:
         input: true
         pullup: true

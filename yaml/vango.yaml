@@ -28,7 +28,6 @@ logger:
     light: DEBUG
     mpu6050: WARN
     pulse_counter: WARN
-    tank_level_sensor: WARN
     tank_level.sensor: WARN
     text_sensor: WARN
 

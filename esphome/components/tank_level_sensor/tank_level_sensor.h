@@ -28,6 +28,7 @@ namespace esphome {
       void set_adc(adc::ADCSensor *adc_sensor) { this->adc_sensor_ = adc_sensor;}
       void add_level(float voltage, float percent_full);
     protected:
+      void read_voltage();
       float get_tank_level(float v);
       std::vector<TankLevel> levels_{};
       GPIOPin *output_pin_ {nullptr};
@@ -37,7 +38,10 @@ namespace esphome {
       adc::ADCSensor *adc_sensor_;
       float margin_percent_;
       float tank_capacity_;
-      
+      float last_level_;
+      int sample_count_ = 0;
+      float adc_reading_ = 0;
+      int pause_count_ = 0;
     };
 
   }  // namespace tank_level_sensor 

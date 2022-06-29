@@ -87,6 +87,7 @@ switch:
       inverted: true
   - platform: gpio
     name: "Valve Rear Heater"
+    id: sw_valve_rear_heater
     pin:
       sx1509: sx1509_hub
       # Use pin number  on the SX1509
@@ -144,9 +145,9 @@ output:
     inverted: true
 #esp32 gpio
   - platform: ledc
-    frequency: "1220Hz"
+    frequency: 19531Hz
     pin: 19
-    id: pwm_5
+    id: hbridge_1
     
 
   - platform: ledc
@@ -185,10 +186,6 @@ light:
     id: light4
     output: pwm_4
 
-  - platform: monochromatic
-    name: "Lights 5"
-    id: light5
-    output: pwm_5
   - platform: monochromatic
     name: "Lights Shower"
     id: light6

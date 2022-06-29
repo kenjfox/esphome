@@ -59,6 +59,6 @@ packages:
   waterflowsensor: !include waterflowsensor.yaml
   gpio: !include gpio.yaml
   victron: !include victron_smartshunt.yaml
-
+  climate: !include climate.yaml
 
 

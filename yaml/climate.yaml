@@ -1,4 +1,14 @@
 # Example dual-point configuration entry
+
+fan:
+  - platform: speed
+    id: rear_heater_fan
+    name: "Rear Heater Fan"
+    restore_mode: RESTORE_DEFAULT_OFF
+    output: hbridge_1
+    speed_count: 100
+   
+
 climate:
   - platform: thermostat
     name: "Thermostat Climate Controller"
@@ -11,9 +21,15 @@ climate:
     min_heating_run_time: 300s
     min_idle_time: 30s
     cool_action:
-      - switch.turn_on: heater_fan_low
+      - fan.turn_on:
+          id: rear_heater_fan
+          speed: 20
     heat_action:
-      - switch.turn_on: heater_fan_low
+      - fan.turn_on:
+          id: rear_heater_fan
+          speed: 20
+      - switch.turn_on: sw_valve_rear_heater
     idle_action:
-      - switch.turn_off: air_cond
-      - switch.turn_off: heater
+      - fan.turn_off:
+          id: rear_heater_fan
+      - switch.turn_off: sw_valve_rear_heater

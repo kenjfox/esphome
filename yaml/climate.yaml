@@ -1,0 +1,19 @@
+# Example dual-point configuration entry
+climate:
+  - platform: thermostat
+    name: "Thermostat Climate Controller"
+    sensor: temp_inside
+    default_target_temperature_low: 65 °F
+    default_target_temperature_high: 80 °F
+    min_cooling_off_time: 300s
+    min_cooling_run_time: 300s
+    min_heating_off_time: 300s
+    min_heating_run_time: 300s
+    min_idle_time: 30s
+    cool_action:
+      - switch.turn_on: heater_fan_low
+    heat_action:
+      - switch.turn_on: heater_fan_low
+    idle_action:
+      - switch.turn_off: air_cond
+      - switch.turn_off: heater

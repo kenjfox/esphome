@@ -36,3 +36,11 @@ button:
       - logger.log: "Button Pressed"
       - lambda: |-
           id(gyro_accel).calibrate(true,true);
+  - platform: template
+    id: btn_reset
+    name: "Reset Tilt Sensor"
+    on_press:
+      then:
+      - logger.log: "Button Pressed"
+      - lambda: |-
+          id(gyro_accel).reset();

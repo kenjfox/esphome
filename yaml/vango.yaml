@@ -21,16 +21,20 @@ esp32:
 
 # Enable logging
 logger:
+  #baud_rate: 115200
   level: DEBUG
   logs:
     sensor: WARN
-    gpio.binary_sensor: DEBUG
-    light: DEBUG
+    gpio.binary_sensor: WARN
+    light: WARN
     mpu6050: WARN
     pulse_counter: WARN
     tank_level.sensor: WARN
     text_sensor: WARN
-
+    dallas.sensor: WARN
+    bme280.sensor: WARN
+    victron_smart_shunt: WARN
+    uart_debug: WARN
 # Enable Home Assistant API
 api:
   password: $password

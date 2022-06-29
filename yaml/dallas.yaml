@@ -1,23 +1,32 @@
 # dallas.yaml - temp sensors
 dallas:
   - pin: 23
+    update_interval: 5s
 sensor:
-# Temp Sensors
+# Coolant Temp
   - platform: dallas
-    address: 0x28375875D0013C34
-    name: "Coolant Temp"
+    address: 0x683c01f096a08e28
+    name: "Temp Coolant"
+    id: temp_coolant
   - platform: dallas
-    address: 0x28900475D0013C59
-    name: "Garage Temp"
+    address: 0xd100000cf3191328
+    name: "Temp Freshwater"
+    id: temp_freshwater
+#outside temp
   - platform: dallas
-    address: 0x28F48175D0013C5F
-    name: "Outside Temp"
+    address: 0x5f3c01d07581f428
+    name: "Temp Outside"
+    id: temp_outside
   - platform: dallas
-    address: 0x281319F30C0000D1
-    name: "Freshwater Tank Temp"
+    address: 0x923c01d07504bc28
+    name: "Temp Hot Water" 
+    id: temp_hot_water
   - platform: dallas
-    address: 0x28BC0475D0013C92
-    name: "Hot Water Temp"
+    address: 0x593c01d075049028
+    name: "Temp Garage"
+    id: temp_garage
+# house battery
   - platform: dallas
     address: 0x663c01d0753c9728
-    name: "House Battery Temp"
+    name: "Temp House Battery"
+    id: temp_house_battery

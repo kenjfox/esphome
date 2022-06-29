@@ -8,12 +8,24 @@ wifi:
   ap:
     ssid: "vango hardware hotspot"
 
+# Example configuration entry
+debug:
+  update_interval: 5s
+
+
 
 time:
   - platform: homeassistant
 
 #sensors
 sensor:
+  - platform: debug
+    free:
+      name: "Heap Free"
+    block:
+      name: "Heap Max Block"
+    loop_time:
+      name: "Loop Time"
   - platform: wifi_signal
     name: "${devicename} WiFi Signal Sensor"
     id: rssi_sensor
@@ -43,6 +55,9 @@ sensor:
   
 
 text_sensor:
+  - platform: debug
+    device:
+      name: "Device Info"
   - platform: template
     name: "Config Version"
     icon: mdi:information-outline

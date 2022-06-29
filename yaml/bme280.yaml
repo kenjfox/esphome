@@ -3,6 +3,7 @@ sensor:
     i2c_id: bus_a
     temperature:
       name: "BME280 Temperature"
+      id: temp_inside
       oversampling: 16x
     pressure:
       name: "BME280 Pressure"

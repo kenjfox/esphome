@@ -49,7 +49,6 @@ void VictronSmartShuntComponent::dump_config() {
   LOG_SENSOR("  ", "Depth of the last discharge", depth_of_the_last_discharge_sensor_);
   LOG_SENSOR("  ", "Amount of discharged energy", amount_of_discharged_energy_sensor_);
 
-
   LOG_SENSOR("  ", "Alarm Reason", alarm_reason_sensor_);
   LOG_TEXT_SENSOR("  ", "Alarm Reason Text", alarm_reason_text_sensor_);
   LOG_SENSOR("  ", "Depth of Average Charge", depth_of_average_discharge_sensor_);
@@ -63,39 +62,51 @@ void VictronSmartShuntComponent::dump_config() {
 
 void VictronSmartShuntComponent::loop() {
   const uint32_t now = millis();
+
   if ((state_ > 0) && (now - last_transmission_ >= 200)) {
     // last transmission too long ago. Reset RX index.
     ESP_LOGW(TAG, "Last transmission too long ago.");
     state_ = 0;
   }
-
+  MessageState msg_state = static_cast<MessageState>(state_);
   if (!available())
     return;
 
   last_transmission_ = now;
   while (available()) {
     uint8_t c;
+    uint8_t previous_c;
+    previous_c = c;
     read_byte(&c);
     if (state_ == 0) {
+      ESP_LOGD(TAG, "STATE 0");
+
       if ((c == '\r') || (c == '\n'))
         continue;
       label_.clear();
       value_.clear();
       state_ = 1;
+      ESP_LOGD(TAG, "State 1");
     }
-    if (state_ == 1) {
+    if (state_ == 1) {  // read label
       if (c == '\t')
         state_ = 2;
       else
         label_.push_back(c);
       continue;
     }
-    if (state_ == 2) {
-      if (label_ == "Checksum") {
+    // TODO:  more elegantly look for value terminator of \r\n.  Sometimes checksum value is the same as either \r or \n
+    //  need to ensure \n is preceded by \r when in checksum
+    if (state_ == 2) {  // read value
+      ESP_LOGD(TAG, "State 2: c: %u \t previous_c: %u", c, previous_c);
+      if (label_ == "Checksum")  // checksum is always single byte
+      {
+        value_.push_back(c);
+        handle_value_();
         state_ = 0;
-        continue;
       }
-      if ((c == '\r') || (c == '\n')) {
+      if ((previous_c == '\r') && (c == '\n')) {
+        ESP_LOGD(TAG, "HANDLE VALUE c: %u \t previous_c: %u", c, previous_c);
         handle_value_();
         state_ = 0;
       } else {
@@ -162,8 +173,6 @@ static const std::string alarm_reason_text(int value) {
     default:
       return "Unknown";
   }
-
-
 }
 
 static const std::string error_code_text(int value) {
@@ -399,7 +408,11 @@ static const std::string pid_text(int value) {
 
 void VictronSmartShuntComponent::handle_value_() {
   int value;
-  if (label_ == "AR") {
+  ESP_LOGD(TAG, "Label:\t%s\tValue:\t%s", label_.c_str(), value_.c_str());
+  if (label_ == "Checksum") {
+    // value = atoi(value_);
+    ESP_LOGD(TAG, "****Checksum:%s", value_.c_str());
+  } else if (label_ == "AR") {
     value = atoi(value_.c_str());
     if (alarm_reason_sensor_ != nullptr)
       alarm_reason_sensor_->publish_state(value);  // NOLINT(cert-err34-c)
@@ -430,16 +443,16 @@ void VictronSmartShuntComponent::handle_value_() {
   } else if (label_ == "H6") {
     if (cumulative_amp_hours_drawn_sensor_ != nullptr)
       // mAh -> Ah
-      cumulative_amp_hours_drawn_sensor_->publish_state(atoi(value_.c_str()) / 1000.0);  // NOLINT(cert-err34-c)  
+      cumulative_amp_hours_drawn_sensor_->publish_state(atoi(value_.c_str()) / 1000.0);  // NOLINT(cert-err34-c)
   } else if (label_ == "H10") {
     if (number_of_automatic_synchronizations_sensor_ != nullptr)
-      number_of_automatic_synchronizations_sensor_->publish_state(atoi(value_.c_str()));  // NOLINT(cert-err34-c)  
+      number_of_automatic_synchronizations_sensor_->publish_state(atoi(value_.c_str()));  // NOLINT(cert-err34-c)
   } else if (label_ == "H11") {
     if (number_of_low_main_voltage_alarms_sensor_ != nullptr)
-      number_of_low_main_voltage_alarms_sensor_->publish_state(atoi(value_.c_str()));  // NOLINT(cert-err34-c)  
+      number_of_low_main_voltage_alarms_sensor_->publish_state(atoi(value_.c_str()));  // NOLINT(cert-err34-c)
   } else if (label_ == "H12") {
     if (number_of_high_main_voltage_alarms_sensor_ != nullptr)
-      number_of_high_main_voltage_alarms_sensor_->publish_state(atoi(value_.c_str()) );  // NOLINT(cert-err34-c)   
+      number_of_high_main_voltage_alarms_sensor_->publish_state(atoi(value_.c_str()));  // NOLINT(cert-err34-c)
   } else if (label_ == "H17") {
     if (amount_of_discharged_energy_sensor_ != nullptr)
       // Wh
@@ -525,7 +538,7 @@ void VictronSmartShuntComponent::handle_value_() {
     if (error_text_sensor_ != nullptr)
       error_text_sensor_->publish_state(error_code_text(value));
   } else if (label_ == "MON") {
-      // ignore
+    // ignore
   } else if (label_ == "MPPT") {
     value = atoi(value_.c_str());  // NOLINT(cert-err34-c)
     if (tracker_operation_sensor_ != nullptr)
@@ -553,7 +566,7 @@ void VictronSmartShuntComponent::handle_value_() {
       // mV to V
       max_aux_battery_voltage_sensor_->publish_state(atoi(value_.c_str()) / 1000.00);  // NOLINT(cert-err34-c)
   } else {
-    ESP_LOGD(TAG, "   ----> unhandled LABEL : '%s'  with value : '%s'", label_.c_str(), value_.c_str());
+    ESP_LOGW(TAG, "   ----> unhandled LABEL : '%s'  with value : '%s'", label_.c_str(), value_.c_str());
   }
 }
 

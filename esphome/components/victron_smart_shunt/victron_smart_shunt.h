@@ -7,7 +7,9 @@
 
 namespace esphome {
 namespace victron_smart_shunt {
-
+enum MessageState{
+  New = 0, Label = 1, Value = 2, Checksum = 3
+};
 class VictronSmartShuntComponent : public uart::UARTDevice, public Component {
  public:
   // MPPT

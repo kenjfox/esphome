@@ -69,8 +69,10 @@ void VictronSmartShuntComponent::loop() {
     state_ = 0;
   }
   MessageState msg_state = static_cast<MessageState>(state_);
-  if (!available())
+  if (!available()) {
+    ESP_LOGD(TAG, "uart not available");
     return;
+  }
 
   last_transmission_ = now;
   while (available()) {
@@ -78,9 +80,8 @@ void VictronSmartShuntComponent::loop() {
     uint8_t previous_c;
     previous_c = c;
     read_byte(&c);
-    if (state_ == 0) {
+    if (state_ == 0) {  // new record
       ESP_LOGD(TAG, "STATE 0");
-
       if ((c == '\r') || (c == '\n'))
         continue;
       label_.clear();
@@ -88,6 +89,7 @@ void VictronSmartShuntComponent::loop() {
       state_ = 1;
       ESP_LOGD(TAG, "State 1");
     }
+
     if (state_ == 1) {  // read label
       if (c == '\t')
         state_ = 2;

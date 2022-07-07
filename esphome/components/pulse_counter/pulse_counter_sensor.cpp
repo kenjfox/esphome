@@ -4,6 +4,8 @@
 namespace esphome {
 namespace pulse_counter {
 
+static const uint32_t RESTORE_STATE_VERSION = 0x848EA6ADUL;
+
 static const char *const TAG = "pulse_counter";
 
 const char *const EDGE_MODE_TO_STRING[] = {"DISABLE", "INCREMENT", "DECREMENT"};
@@ -52,6 +54,7 @@ bool PulseCounterStorage::pulse_counter_setup(InternalGPIOPin *pin) {
   next_pcnt_unit = pcnt_unit_t(int(next_pcnt_unit) + 1);
 
   ESP_LOGCONFIG(TAG, "    PCNT Unit Number: %u", this->pcnt_unit);
+  ESP_LOGW(TAG, "pulse_counter_setup");
 
   pcnt_count_mode_t rising = PCNT_COUNT_DIS, falling = PCNT_COUNT_DIS;
   switch (this->rising_edge_mode) {
@@ -89,6 +92,7 @@ bool PulseCounterStorage::pulse_counter_setup(InternalGPIOPin *pin) {
       .unit = this->pcnt_unit,
       .channel = PCNT_CHANNEL_0,
   };
+
   esp_err_t error = pcnt_unit_config(&pcnt_config);
   if (error != ESP_OK) {
     ESP_LOGE(TAG, "Configuring Pulse Counter failed: %s", esp_err_to_name(error));
@@ -127,6 +131,7 @@ bool PulseCounterStorage::pulse_counter_setup(InternalGPIOPin *pin) {
   }
   return true;
 }
+
 pulse_counter_t PulseCounterStorage::read_raw_value() {
   pulse_counter_t counter;
   pcnt_get_counter_value(this->pcnt_unit, &counter);
@@ -136,12 +141,28 @@ pulse_counter_t PulseCounterStorage::read_raw_value() {
 }
 #endif
 
+void PulseCounterSensor::restore_state_() {
+  this->rtc_ = global_preferences->make_preference<uint32_t>(this->get_object_id_hash());
+  uint32_t recovered{0};
+  ESP_LOGW(TAG, "recovering state...");
+  if (!this->rtc_.load(&recovered)) {
+    ESP_LOGW(TAG, "Unable to restore state.");
+    return;
+  }
+  current_total_ = recovered;
+}
+
 void PulseCounterSensor::setup() {
   ESP_LOGCONFIG(TAG, "Setting up pulse counter '%s'...", this->name_.c_str());
+
   if (!this->storage_.pulse_counter_setup(this->pin_)) {
+    ESP_LOGE(TAG, "Setup failed");
     this->mark_failed();
     return;
   }
+  ESP_LOGE(TAG, "Restoring state...");
+  this->restore_state_();
+  ESP_LOGE(TAG, "Restored value: %i", current_total_);
 }
 
 void PulseCounterSensor::dump_config() {
@@ -152,9 +173,30 @@ void PulseCounterSensor::dump_config() {
   ESP_LOGCONFIG(TAG, "  Filtering pulses shorter than %u µs", this->storage_.filter_us);
   LOG_UPDATE_INTERVAL(this);
 }
+void PulseCounterSensor::reset_total() {
+  ESP_LOGD(TAG, "Resetting total");
+  current_total_ = 0;
+  if (!this->rtc_.save(&current_total_))
+    ESP_LOGE(TAG, "failed to save state");
+  this->total_sensor_->publish_state(current_total_);
+}
+void PulseCounterSensor::pause_total(bool pause) {
+  if (!pause) {
+    unpause_pending_ = true;  // need to allow for wind-down of valve
+  } else
+    pause_total_ = pause;
+}
 
 void PulseCounterSensor::update() {
-  pulse_counter_t raw = this->storage_.read_raw_value();
+  pulse_counter_t count = this->storage_.read_raw_value();
+  // don't unpause totalling until the counter stops
+  if (count == 0 && unpause_pending_) {
+    pause_total_ = false;
+    unpause_pending_ = false;
+  }
+
+  pulse_counter_t raw = pause_total_ ? 0 : count;
+
   uint32_t now = millis();
   if (this->last_time_ != 0) {
     uint32_t interval = now - this->last_time_;
@@ -167,9 +209,14 @@ void PulseCounterSensor::update() {
     current_total_ += raw;
     ESP_LOGD(TAG, "'%s': Total : %i pulses", this->get_name().c_str(), current_total_);
     this->total_sensor_->publish_state(current_total_);
+    if (raw > 0) {  // only save if total changed
+      ESP_LOGD(TAG, " Saving total: %i pulses", current_total_);
+      if (!this->rtc_.save(&current_total_))
+        ESP_LOGE(TAG, "failed to save state");
+    }
+    this->isPaused_sensor_->publish_state(this->pause_total_);
+    this->last_time_ = now;
   }
-  this->last_time_ = now;
 }
-
 }  // namespace pulse_counter
 }  // namespace esphome

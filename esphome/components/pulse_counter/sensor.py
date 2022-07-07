@@ -2,6 +2,7 @@ import esphome.codegen as cg
 import esphome.config_validation as cv
 from esphome import pins
 from esphome.components import sensor
+from esphome.components import binary_sensor
 from esphome.const import (
     CONF_COUNT_MODE,
     CONF_FALLING_EDGE,
@@ -31,6 +32,7 @@ COUNT_MODE_SCHEMA = cv.enum(COUNT_MODES, upper=True)
 PulseCounterSensor = pulse_counter_ns.class_(
     "PulseCounterSensor", sensor.Sensor, cg.PollingComponent
 )
+CONF_DISABLE_PULSE_COUNT = "disable_pulse_count"
 
 
 def validate_internal_filter(value):
@@ -96,6 +98,7 @@ CONFIG_SCHEMA = (
                 accuracy_decimals=0,
                 state_class=STATE_CLASS_TOTAL_INCREASING,
             ),
+            cv.Required(CONF_DISABLE_PULSE_COUNT): binary_sensor.binary_sensor_schema(),
         }
     )
     .extend(cv.polling_component_schema("60s"))
@@ -116,3 +119,6 @@ async def to_code(config):
     if CONF_TOTAL in config:
         sens = await sensor.new_sensor(config[CONF_TOTAL])
         cg.add(var.set_total_sensor(sens))
+
+    bsens = await binary_sensor.new_binary_sensor(config[CONF_DISABLE_PULSE_COUNT])
+    cg.add(var.set_binary_sensor(bsens))

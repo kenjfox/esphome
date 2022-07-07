@@ -1,15 +1,34 @@
+
 sensor:
-# water flow sensor
+# water flow sensor  
   - platform: pulse_counter
     name: "Water Flow Rate"
-    id: water_flow_meter
+    id: "water_flow_meter"
     pin: 39
-    update_interval: 1s
+    count_mode: 
+      falling_edge: INCREMENT
+      rising_edge: DISABLE
+    update_interval: .5s
     filters:
-    - lambda: return (x * 60 / 480)  ;
-    unit_of_measurement: "L/min"  
+     - multiply: 0.000583431   # calibrated at sink ~ 450 pulses per litre
+    unit_of_measurement: "GPM"  
+    accuracy_decimals: 2
     total:
-      unit_of_measurement: "L"
-      name: "Water Used"
+      unit_of_measurement: "gal"
+      name: "Total Water Used"
+      accuracy_decimals: 2
       filters:
-        - multiply: 0.01666666666
+        - multiply: 0.000583431 # calibrated at sink
+    disable_pulse_count:
+      name: "Water Flow Totaling Disabled"
+button:
+  - platform: template
+    id: btn_reset_water_flow
+    name: "Water Flow Reset Total"
+    on_press:
+      then:
+      - logger.log: "Reset Button Pressed"
+      - lambda: |-
+          id(water_flow_meter).reset_total();
+
+ 

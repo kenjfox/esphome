@@ -2,7 +2,7 @@ substitutions:
   name: "vango"
   lower_devicename: $name
   devicename: "Vango"
-  config_version: "v2022.03.07.001"
+  config_version: "v2022.07.06.001"
   # wifi_fast_connect: "false"
   # wifi_reboot_timeout: 0s
   accuracy: "2"
@@ -33,8 +33,12 @@ logger:
     text_sensor: WARN
     dallas.sensor: WARN
     bme280.sensor: WARN
-    victron_smart_shunt: WARN
+    victron_smart_shunt: WARN  
     uart_debug: WARN
+    ledc: WARN
+    climate: WARN
+    fan: WARN
+
 # Enable Home Assistant API
 api:
   password: $password

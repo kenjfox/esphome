@@ -70,7 +70,7 @@ void VictronSmartShuntComponent::loop() {
   }
   MessageState msg_state = static_cast<MessageState>(state_);
   if (!available()) {
-    ESP_LOGD(TAG, "uart not available");
+    // ESP_LOGW(TAG, "uart not available");
     return;
   }
 
@@ -79,8 +79,11 @@ void VictronSmartShuntComponent::loop() {
     uint8_t c;
     uint8_t previous_c;
     previous_c = c;
+
     read_byte(&c);
+
     if (state_ == 0) {  // new record
+
       ESP_LOGD(TAG, "STATE 0");
       if ((c == '\r') || (c == '\n'))
         continue;
@@ -97,6 +100,7 @@ void VictronSmartShuntComponent::loop() {
         label_.push_back(c);
       continue;
     }
+
     // TODO:  more elegantly look for value terminator of \r\n.  Sometimes checksum value is the same as either \r or \n
     //  need to ensure \n is preceded by \r when in checksum
     if (state_ == 2) {  // read value
@@ -106,11 +110,18 @@ void VictronSmartShuntComponent::loop() {
         value_.push_back(c);
         handle_value_();
         state_ = 0;
+        c = 0;
+        previous_c = 0;
+        continue;
       }
+
       if ((previous_c == '\r') && (c == '\n')) {
         ESP_LOGD(TAG, "HANDLE VALUE c: %u \t previous_c: %u", c, previous_c);
         handle_value_();
         state_ = 0;
+        c = 0;
+        previous_c = 0;
+
       } else {
         value_.push_back(c);
       }

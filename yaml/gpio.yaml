@@ -1,6 +1,7 @@
 sx1509:
   - id: sx1509_hub
     address: 0x3E
+   
 
 switch: 
 #sx1509 outputs
@@ -30,15 +31,6 @@ switch:
         output: true
       inverted: true
   - platform: gpio
-    name: "Shower Fan"
-    id: sw_shower_fan
-    pin:
-      sx1509: sx1509_hub
-      number: 4
-      mode:
-        output: true
-      inverted: true
-  - platform: gpio
     name: "Coolant Circ Pump"
     pin:
       sx1509: sx1509_hub
@@ -47,9 +39,8 @@ switch:
         output: true
       inverted: true
   - platform: gpio
-    name: "Heater Fan - Low"
-    id: heater_fan_low
-    interlock: &interlock_group [heater_fan_low, heater_fan_medium, heater_fan_high]
+    name: "Relay 1"
+    id: relay_1
     pin:
       sx1509: sx1509_hub
       number: 2
@@ -57,9 +48,9 @@ switch:
         output: true
       inverted: true
   - platform: gpio
-    name: "Heater Fan - Medium"
-    id: heater_fan_medium
-    interlock: *interlock_group
+    name: "Relay 2"
+    id: relay_2
+    
     pin:
       sx1509: sx1509_hub
       number: 1
@@ -67,9 +58,9 @@ switch:
           output: true
       inverted: true
   - platform: gpio
-    name: "Heater Fan - High"
-    id: heater_fan_high
-    interlock: *interlock_group
+    name: "Relay 3"
+    id: relay_3
+    
     pin:
       sx1509: sx1509_hub
       number: 0
@@ -107,9 +98,15 @@ switch:
         output: true
       
     on_turn_on:
+    - lambda: |- 
+        id(water_flow_meter).pause_total(true);
     - delay: 10s
     - switch.turn_off: sw_valve_hw_bypass
     
+    on_turn_off:
+    - lambda: |- 
+        id(water_flow_meter).pause_total(false);
+
   - platform: gpio
     name: "Valve Coolant Recirculator"
     pin:
@@ -125,6 +122,15 @@ output:
     id: pwm_1
     pin: 12
     inverted: true
+
+  - platform: gpio
+    id: sw_shower_fan
+    pin:
+      sx1509: sx1509_hub
+      number: 4
+      mode:
+        output: true
+      inverted: true
 
   - platform: sx1509
     sx1509_id: sx1509_hub
@@ -145,25 +151,26 @@ output:
     inverted: true
 #esp32 gpio
   - platform: ledc
-    frequency: 19531Hz
+    frequency: 22000Hz
+    min_power: .22
     pin: 19
     id: hbridge_1
     
 
   - platform: ledc
-    frequency: "1220Hz"
+    frequency: "22000Hz"
     pin: 18
     id: pwm_6
     
 
   - platform: ledc
-    frequency: "1220Hz"
+    frequency: "22000Hz"
     pin: 5
     id: pwm_7
     
 
   - platform: ledc
-    frequency: "1220Hz"
+    frequency: "22000Hz"
     pin: 15
     id: pwm_8
     
@@ -185,7 +192,6 @@ light:
     name: "Lights Hall"
     id: light4
     output: pwm_4
-
   - platform: monochromatic
     name: "Lights Shower"
     id: light6
@@ -198,6 +204,11 @@ light:
     name: "Lights Bed"
     id: light8
     output: pwm_8
+fan: 
+  - platform: binary
+    output: sw_shower_fan
+    name: "Shower Fan"
+    id: fan_shower
 
 binary_sensor:
   - platform: gpio
@@ -493,13 +504,7 @@ binary_sensor:
       min_length: 10ms
       max_length: 450ms
       then:
-        if:
-          condition:
-            switch.is_on: sw_shower_fan
-          then:
-            - switch.turn_off: sw_shower_fan
-          else:
-            - switch.turn_on: sw_shower_fan
+        fan.toggle: fan_shower
     filters:
       - invert:
       - delayed_on: 10ms

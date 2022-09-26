@@ -30,43 +30,7 @@ switch:
       mode:
         output: true
       inverted: true
-  - platform: gpio
-    name: "Coolant Circ Pump"
-    pin:
-      sx1509: sx1509_hub
-      number: 3
-      mode:
-        output: true
-      inverted: true
-  - platform: gpio
-    name: "Relay 1"
-    id: relay_1
-    pin:
-      sx1509: sx1509_hub
-      number: 2
-      mode:
-        output: true
-      inverted: true
-  - platform: gpio
-    name: "Relay 2"
-    id: relay_2
-    
-    pin:
-      sx1509: sx1509_hub
-      number: 1
-      mode:
-          output: true
-      inverted: true
-  - platform: gpio
-    name: "Relay 3"
-    id: relay_3
-    
-    pin:
-      sx1509: sx1509_hub
-      number: 0
-      mode:
-        output: true
-      inverted: true
+  
   - platform: gpio
     name: "Valve Water Heater"
     pin:
@@ -117,6 +81,31 @@ switch:
       inverted: true
 
 output: 
+   # RGBW for upper cabinet
+  - platform: sx1509
+    id: ucled_1
+    sx1509_id: sx1509_hub   
+    pin: 2
+    inverted: true
+
+  - platform: sx1509
+    id: ucled_2
+    sx1509_id: sx1509_hub
+    pin: 1
+    inverted: true
+
+  - platform: sx1509
+    id: ucled_3
+    pin: 0
+    sx1509_id: sx1509_hub
+    inverted: true
+
+  - platform: sx1509
+    id: ucled_4
+    sx1509_id: sx1509_hub
+    pin: 3
+    inverted: true
+
   - platform: sx1509
     sx1509_id: sx1509_hub
     id: pwm_1
@@ -149,6 +138,7 @@ output:
     id: pwm_4
     pin: 15
     inverted: true
+
 #esp32 gpio
   - platform: ledc
     frequency: 22000Hz
@@ -204,6 +194,15 @@ light:
     name: "Lights Bed"
     id: light8
     output: pwm_8
+  - platform: rgbw
+    id: rgbw1
+    name: "Upper Cabinet Light"
+    red: ucled_1
+    green: ucled_2
+    blue: ucled_3
+    white: ucled_4
+
+
 fan: 
   - platform: binary
     output: sw_shower_fan
@@ -292,25 +291,34 @@ binary_sensor:
             - light.is_off: light4
             - light.is_off: light6
             - light.is_off: light8
+            - light.is_off: rgbw1
           then:
-            - light.turn_on:
+            - light.turn_on: 
                 id: light1
-                brightness: 1.0
-            - light.turn_on:
+                brightness: 80%
+
+            - light.turn_on: 
                 id: light4
-                brightness: 1.0
-            - light.turn_on:
+                brightness: 80%
+
+            - light.turn_on: 
                 id: light6
-                brightness: 1.0
-            - light.turn_on:
+                brightness: 80%
+
+            - light.turn_on: 
                 id: light8
-                brightness: 1.0
+                brightness: 80%
+
+            - light.turn_on: 
+                id: rgbw1
+                color_mode: WHITE
+                brightness: 80%
           else:
             - light.turn_off: light1
             - light.turn_off: light4
             - light.turn_off: light6
             - light.turn_off: light8
-
+            - light.turn_off: rgbw1
     on_press:
       then:
         - if:
@@ -341,6 +349,11 @@ binary_sensor:
                         id: light8
                         relative_brightness: 5%
                         transition_length: 0.1s
+
+                    - light.dim_relative:
+                        id: rgbw1
+                        relative_brightness: 5%
+                        transition_length: 0.1s
                     - delay: 0.1s
             else:
               - delay: 0.25s
@@ -369,6 +382,12 @@ binary_sensor:
                         id: light8
                         relative_brightness: -5%
                         transition_length: 0.1s
+
+                    - light.dim_relative:
+                        id: rgbw1
+                        relative_brightness: -5%
+                        transition_length: 0.1s
+
                     - delay: 0.1s
   - platform: gpio
     name: "Button Kitchen"
@@ -392,10 +411,10 @@ binary_sensor:
           then:
             - light.turn_on:
                 id: light1
-                brightness: 1.0
+                
             - light.turn_on:
                 id: light4
-                brightness: 1.0 
+               
           else:
             - light.turn_off: light1
             - light.turn_off: light4
@@ -453,15 +472,7 @@ binary_sensor:
       min_length: 10ms
       max_length: 350ms
       then:
-      - if:
-          condition:
-            - light.is_off: light6
-          then:
-            - light.turn_on:
-                id: light6
-                brightness: 1.0
-          else:
-            - light.turn_off: light6
+        light.toggle: light6
     on_press:
       then:
         - if:
@@ -529,9 +540,7 @@ binary_sensor:
                
               then:
                 - light.turn_on:
-                    id: light8
-                    brightness: 1.0
-                
+                    id: light8                
               else:
                 - light.turn_off: light8
     on_press:
@@ -586,8 +595,9 @@ binary_sensor:
             - switch.turn_off: sw_valve_hw_bypass
           else:
             - switch.turn_on: sw_valve_hw_bypass
+
   - platform: gpio
-    name: "Button 8"
+    name: "Button Cabinet"
     id: btn_8
     pin: 
       number: 36
@@ -596,3 +606,38 @@ binary_sensor:
     filters:
       - invert:
       - delayed_on: 10ms
+    on_click: 
+          min_length: 10ms
+          max_length: 350ms
+          then:
+            light.toggle: rgbw1
+    on_press:
+        then:
+          - if:
+              condition:
+                light.is_off: rgbw1
+              then:
+                - delay: 0.25s
+                - while:
+                    condition:
+                      binary_sensor.is_on: btn_8
+                    then:
+                      - light.dim_relative:
+                          id: rgbw1
+                          relative_brightness: 5%
+                          transition_length: 0.1s
+                      - delay: 0.1s
+                      
+              else:
+                - delay: 0.25s
+                - while:
+                    condition:
+                      and:
+                        - binary_sensor.is_on: btn_8
+                        - light.is_on: rgbw1
+                    then:
+                      - light.dim_relative:
+                          id: rgbw1
+                          relative_brightness: -5%
+                          transition_length: 0.1s
+                      - delay: 0.1s

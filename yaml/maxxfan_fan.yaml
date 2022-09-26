@@ -1,0 +1,51 @@
+substitutions:
+  name: "maxxfan"
+  lower_devicename: $name
+  devicename: "maxxfan"
+  config_version: "v2022.07.06.001"
+  # wifi_fast_connect: "false"
+  # wifi_reboot_timeout: 0s
+  accuracy: "2"
+  password: "govango!"
+  device_verbose_name: "MaxxFan"
+
+esphome:
+  name: $name
+    
+esp32:
+  board: esp32-s2-saola-1
+  variant: esp32S2
+  framework:
+    type: esp-idf
+    version: recommended
+
+wifi:
+  ssid:     foxstar
+  password: 12345678&
+
+
+logger:
+  level: VERBOSE
+
+api:
+ password: $password
+
+ota:
+  password: $password
+
+remote_transmitter:
+  pin: 41
+  carrier_duty_percent: 50%
+  id: ir_rear_fan
+  
+climate:
+- platform: maxxfan_ir
+  name: "Rear Fan"
+  supports_cool: true
+  supports_heat: false
+  transmitter_id: ir_rear_fan
+  use_fahrenheit: true
+  
+    
+
+

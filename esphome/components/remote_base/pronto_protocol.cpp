@@ -226,7 +226,33 @@ optional<ProntoData> ProntoProtocol::decode(RemoteReceiveData src) {
   return out;
 }
 
-void ProntoProtocol::dump(const ProntoData &data) { ESP_LOGD(TAG, "Received Pronto: data=%s", data.data.c_str()); }
+int FromHex(const std::string &s) { return strtoul(s.c_str(), NULL, 16); }
+
+std::string write_decimals(const ProntoData &data) {
+  std::string s = data.data;
+  std::string delim = " ";
+  std::string output = "";
+  char hexval[6] = "";
+  auto start = 0U;
+  auto end = s.find(delim);
+  while (end != std::string::npos) {
+    snprintf(hexval, 5, "%d ", FromHex(s.substr(start, end - start)));
+    output += hexval;
+    start = end + delim.length();
+    end = s.find(delim, start);
+  }
+  snprintf(hexval, 5, "%d ", FromHex(s.substr(start)));
+  output += hexval;
+  return output;
+}
+
+void ProntoProtocol::dump(const ProntoData &data) {
+  if (data.data.length() > 60)  // added to filter out noise
+  {
+    ESP_LOGD(TAG, "Received Pronto: data=%s", data.data.c_str());
+    // ESP_LOGD(TAG, "Decimals: %s", write_decimals(data).c_str());
+  }
+}
 
 }  // namespace remote_base
 }  // namespace esphome

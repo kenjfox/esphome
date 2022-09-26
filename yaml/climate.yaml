@@ -32,4 +32,4 @@ climate:
     idle_action:
       - fan.turn_off:
           id: rear_heater_fan
-      - switch.turn_off: sw_valve_rear_heater
+      - switch.turn_off: sw_valve_rear_heater 

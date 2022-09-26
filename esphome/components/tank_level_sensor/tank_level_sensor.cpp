@@ -35,8 +35,8 @@ float TankLevelSensor::get_tank_level(float v) {
       lastLevel = tl;
       vdiff_last = vdiff;
     }
-  }
-  return -100;  // should not happen
+    }
+  return lastLevel.percent_full;
 }
 
 void TankLevelSensor::set_output_pin(GPIOPin *pin) { this->output_pin_ = pin; }

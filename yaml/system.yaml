@@ -1,6 +1,6 @@
 
 wifi:
-  ssid: "vango-net"
+  ssid: "vango-inside"
   password: $password
   fast_connect: on
   power_save_mode: none
@@ -50,7 +50,7 @@ sensor:
   - platform: uptime
     name: "${devicename} Uptime"
     id: uptime_s
-    update_interval: 5s
+    update_interval: 30s
 
   
 
@@ -103,7 +103,7 @@ text_sensor:
           sprintf(buffer, "%ud %02uh %02um %02us", dys, hrs, mnts, dur);
           return {buffer};
     icon: mdi:clock-start
-    update_interval: 5s
+    update_interval: 30s
  
 switch:
   - platform: restart

@@ -1,7 +1,8 @@
+#define _GLIBCXX_USE_C99
 #include "climate_maxxfan_ir.h"
 #include "esphome/core/log.h"
 #include "maxxfan_ir_commands.h"
-
+using std::stoi;
 namespace esphome {
 namespace maxxfan_ir_climate {
 
@@ -25,7 +26,7 @@ const string get_fanmode_from_speed(uint8_t speed) {
 MaxxFanIr::MaxxFanIr() : climate_ir::ClimateIR(TEMP_MIN, TEMP_MAX, 0.555555f, false, false, {}, {}) {
   this->pronto_ = new remote_base::ProntoProtocol();
   this->ClimateIR::mode = ClimateMode::CLIMATE_MODE_COOL;
-  this->ClimateIR::set_custom_fan_mode_(FAN_SPEEDS[100]);
+  this->ClimateIR::set_custom_fan_mode_(FAN_SPEEDS.at(100));
   this->ClimateIR::set_custom_preset_(PRESET_AIR_IN);
 
   // this->set_traits(this->mode);
@@ -41,6 +42,8 @@ void MaxxFanIr::setup() {
   } else {
     ESP_LOGD(TAG, "setup: NO CUSTOM FANMODE YET");
   }
+  this->custom_preset_before_ =
+      this->custom_preset.value() == PRESET_VENT_ONLY ? PRESET_AIR_OUT : this->custom_preset.value_or(PRESET_AIR_OUT);
 }
 
 ClimateTraits MaxxFanIr::traits() {
@@ -48,7 +51,9 @@ ClimateTraits MaxxFanIr::traits() {
   auto traits = ClimateTraits();
   traits.set_supported_modes(
       {ClimateMode::CLIMATE_MODE_OFF, ClimateMode::CLIMATE_MODE_COOL, ClimateMode::CLIMATE_MODE_FAN_ONLY});
-
+  traits.set_visual_min_temperature(TEMP_MIN);
+  traits.set_visual_max_temperature(TEMP_MAX);
+  traits.set_visual_temperature_step(this->fahrenheit_ ? 1.0f : 0.5f);
   traits.set_supported_custom_presets({PRESET_VENT_ONLY, PRESET_AIR_IN, PRESET_AIR_OUT});
   traits.set_supported_custom_fan_modes({" 10", " 20", " 30", " 40", " 50", " 60", " 70", " 80", " 90", "100"});
 
@@ -59,6 +64,13 @@ void MaxxFanIr::on_fanspeed_state(float speed) {
   // fanspeed number component updated directly
   ESP_LOGD(TAG, "on_fanspeed_state: %2.0f", speed);
   if (speed != this->fanspeed_) {
+    if (fmod(speed, 10) != 0) {
+      speed = std::round(speed / 10) * 10;
+      if (speed > 100)
+        speed = 100;
+      else if (speed < 10)
+        speed = 10;
+    }
     ESP_LOGD(TAG, "on_fanspeed_state: speed changed from %d to %2.0f ", this->fanspeed_, speed);
     // set custom fan mode to match speed from fanspeed component
     auto call = this->make_call();
@@ -68,7 +80,7 @@ void MaxxFanIr::on_fanspeed_state(float speed) {
   }
 }
 
-void MaxxFanIr::set_fanspeed_number(FanSpeed *num) {
+void MaxxFanIr::set_fanspeed_component(FanSpeed *num) {
   this->fanspeed_component_ = num;
   num->add_on_state_callback([this](float state) { this->on_fanspeed_state(state); });
 }
@@ -96,8 +108,9 @@ void MaxxFanIr::control(const ClimateCall &call) {
       this->mode_before_ = mode;
     }
   }
-  if (call.get_target_temperature().has_value())
-    this->target_temperature = call.get_target_temperature().value();
+  if (call.get_target_temperature().has_value()) {
+    this->target_temperature = clamp<float>(call.get_target_temperature().value(), TEMP_MIN, TEMP_MAX);
+  }
 
   if (call.get_preset().has_value()) {
     this->preset = call.get_preset().value();
@@ -113,6 +126,7 @@ void MaxxFanIr::control(const ClimateCall &call) {
   if (call.get_fan_mode().has_value()) {
     this->fan_mode = call.get_fan_mode().value();
   } else if (call.get_custom_fan_mode().has_value()) {
+    ESP_LOGD(TAG, "Custom fan mode has value");
     if (this->custom_fan_mode.value() != call.get_custom_fan_mode().value()) {
       ESP_LOGD(TAG, "Custom fan mode changed to %s", call.get_custom_fan_mode().value().c_str());
       this->custom_fan_mode = call.get_custom_fan_mode().value();
@@ -142,7 +156,7 @@ void MaxxFanIr::transmit_state() {
         send_ir("OFF_OPEN");
       break;
     case ClimateMode::CLIMATE_MODE_COOL:
-      key += std::to_string(target_temp_F);
+      key += to_string(target_temp_F);
       send_ir(key.c_str());
       break;
     case ClimateMode::CLIMATE_MODE_FAN_ONLY:

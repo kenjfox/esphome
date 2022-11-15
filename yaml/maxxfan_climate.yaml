@@ -1,23 +1,30 @@
 substitutions:
-  name: "maxxfanclimate"
+  name: "maxxfan"
   lower_devicename: $name
-  devicename: "maxxfanclimate"
+  devicename: "maxxfan"
   config_version: "v2022.07.06.001"
   # wifi_fast_connect: "false"
   # wifi_reboot_timeout: 0s
   accuracy: "2"
   password: "govango!"
-  device_verbose_name: "MaxxFan Climate"
+  device_verbose_name: "MaxxFan"
 
 esphome:
   name: $name
     
 esp32:
-  board: esp32-s2-saola-1
-  variant: esp32S2
+  board: esp32dev
+  variant: esp32
   framework:
     type: arduino
-    version: latest
+    version: recommended
+
+# esp32:
+#   board: esp32-s2-saola-1
+#   variant: esp32S2
+#   framework:
+#     type: arduino
+#     version: latest
 
 wifi:
   ssid:     foxstar
@@ -25,7 +32,7 @@ wifi:
 
 
 logger:
-  level: VERBOSE
+  level: DEBUG
 
 api:
  password: $password
@@ -34,20 +41,32 @@ ota:
   password: $password
 
 remote_transmitter:
-  pin: 41
+  pin: 19
   carrier_duty_percent: 50%
   id: ir_rear_fan
+
+output:
+  - platform: template
+    id: maxxfan_speed_output
+    type: float
+    
   
 climate:
 - platform: maxxfan_ir_climate
+  id: "maxxfan_rear"
   name: "MaxxFan"
   supports_cool: true
   supports_heat: false
   transmitter_id: ir_rear_fan
   use_fahrenheit: true
 
+
+
 web_server:
-  
-    
+  js_url: ""
+  js_include: "./v2/www2.js"
+  local: false
+  ota: false
+  version: 2
 
 

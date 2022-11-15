@@ -1,6 +1,6 @@
 sx1509:
   - id: sx1509_hub
-    address: 0x3E
+    address: 0x71
    
 
 switch: 
@@ -10,7 +10,7 @@ switch:
     id: sw_battery_heater
     pin:
       sx1509: sx1509_hub
-      number: 7
+      number: 9
       mode:
         output: true
       inverted: true
@@ -18,7 +18,7 @@ switch:
     name: "Diesel Heater"
     pin:
       sx1509: sx1509_hub
-      number: 6
+      number: 14
       mode:
         output: true
       inverted: true
@@ -26,40 +26,27 @@ switch:
     name: "Audio"
     pin:
       sx1509: sx1509_hub
-      number: 5
+      number: 15
       mode:
         output: true
       inverted: true
   
   - platform: gpio
     name: "Valve Water Heater"
-    pin:
-      sx1509: sx1509_hub
-      # Use pin number  on the SX1509
-      number: 8
-      mode:
-        output: true
-      inverted: true
+    pin: 32
+
   - platform: gpio
     name: "Valve Rear Heater"
     id: sw_valve_rear_heater
-    pin:
-      sx1509: sx1509_hub
-      # Use pin number  on the SX1509
-      number: 9
-      mode:
-        output: true
-      inverted: true
+    pin: 33
+
   - platform: gpio
     name: "Valve HW Bypass"
     id: sw_valve_hw_bypass
     restore_mode: ALWAYS_OFF
-    pin:
-      sx1509: sx1509_hub
-      # Use pin number  on the SX1509
-      number: 10
-      mode:
-        output: true
+    pin: 
+      number: 18
+      inverted: true
       
     on_turn_on:
     - lambda: |- 
@@ -73,146 +60,166 @@ switch:
 
   - platform: gpio
     name: "Valve Coolant Recirculator"
-    pin:
-      sx1509: sx1509_hub
-      number: 11
-      mode:
-        output: true
-      inverted: true
+    pin: 5
 
 output: 
-   # RGBW for upper cabinet
+   # sx1509 
   - platform: sx1509
-    id: ucled_1
+    id: sx_00
     sx1509_id: sx1509_hub   
-    pin: 2
+    pin: 0
     inverted: true
 
   - platform: sx1509
-    id: ucled_2
+    id: sx_01
     sx1509_id: sx1509_hub
     pin: 1
     inverted: true
 
   - platform: sx1509
-    id: ucled_3
-    pin: 0
+    id: sx_02
+    pin: 2
     sx1509_id: sx1509_hub
     inverted: true
 
   - platform: sx1509
-    id: ucled_4
+    id: sx_03
     sx1509_id: sx1509_hub
     pin: 3
     inverted: true
 
   - platform: sx1509
     sx1509_id: sx1509_hub
-    id: pwm_1
-    pin: 12
-    inverted: true
-
-  - platform: gpio
-    id: sw_shower_fan
-    pin:
-      sx1509: sx1509_hub
-      number: 4
-      mode:
-        output: true
-      inverted: true
-
-  - platform: sx1509
-    sx1509_id: sx1509_hub
-    id: pwm_2
-    pin: 13
+    id: sx_04
+    pin: 4
     inverted: true
 
   - platform: sx1509
     sx1509_id: sx1509_hub
-    id: pwm_3
-    pin: 14
+    id: sx_05
+    pin: 5
     inverted: true
 
   - platform: sx1509
     sx1509_id: sx1509_hub
-    id: pwm_4
-    pin: 15
+    id: sx_06
+    pin: 6
     inverted: true
+
+  - platform: sx1509
+    sx1509_id: sx1509_hub
+    id: sx_07
+    pin: 7
+    inverted: true
+
+  - platform: sx1509
+    sx1509_id: sx1509_hub
+    id: sx_08
+    pin: 8
+    inverted: true
+
+  - platform: sx1509
+    sx1509_id: sx1509_hub
+    id: sx_09
+    pin: 9
+    inverted: true
+
+  - platform: sx1509
+    sx1509_id: sx1509_hub
+    id: sx_10
+    pin: 10
+    inverted: true
+
+  - platform: sx1509
+    sx1509_id: sx1509_hub
+    id: sx_11
+    pin: 11
+    inverted: true
+
+# sx 12 is input
+
+# 13- 15 are photrelays
+
+
+
 
 #esp32 gpio
   - platform: ledc
-    frequency: 22000Hz
+    frequency: "25000Hz"
     min_power: .22
     pin: 19
     id: hbridge_1
     
-
   - platform: ledc
-    frequency: "22000Hz"
-    pin: 18
-    id: pwm_6
-    
-
-  - platform: ledc
-    frequency: "22000Hz"
-    pin: 5
-    id: pwm_7
-    
-
-  - platform: ledc
-    frequency: "22000Hz"
+    frequency: "25000Hz"
     pin: 15
-    id: pwm_8
-    
+    id: hbridge_2   
+
+
+
    
 light: 
   - platform: monochromatic
-    name: "Lights Kitchen"
-    id: light1
-    output: pwm_1
-  - platform: monochromatic
-    name: "Lights Porch"
-    id: light2
-    output: pwm_2
-  - platform: monochromatic
-    name: "Lights 3"
-    id: light3
-    output: pwm_3
-  - platform: monochromatic
-    name: "Lights Hall"
-    id: light4
-    output: pwm_4
-  - platform: monochromatic
-    name: "Lights Shower"
-    id: light6
-    output: pwm_6
-  - platform: monochromatic
-    name: "Lights Garage"
-    id: light7
-    output: pwm_7
+    name: "Lights Rear Flood"
+    id: light_rear_flood
+    output: sx_00
+
+  # - platform: monochromatic
+  #   name: "Unknown"
+  #   id: light_unkown
+  #   output: sx_01
+
   - platform: monochromatic
     name: "Lights Bed"
-    id: light8
-    output: pwm_8
-  - platform: rgbw
-    id: rgbw1
-    name: "Upper Cabinet Light"
-    red: ucled_1
-    green: ucled_2
-    blue: ucled_3
-    white: ucled_4
+    id: light_bed
+    output: sx_02
+
+  - platform: monochromatic
+    name: "Button Backlight"
+    id: light_button
+    output: sx_03
+
+  - platform: monochromatic
+    name: "Lights Cab"
+    id: light_cab
+    output: sx_04
+
+  - platform: monochromatic
+    name: "Lights Porch Right"
+    id: light_porch_right
+    output: sx_05
+
+  - platform: monochromatic
+    name: "Lights Porch Left"
+    id: light_porch_left
+    output: sx_06
+
+  - platform: monochromatic
+    name: "Lights Garage"
+    id: light_garage
+    output: sx_07
+
+  - platform: monochromatic
+    name: "Lights Hall"
+    id: light_hall
+    output: sx_08
+
+  - platform: monochromatic
+    name: "Lights Kitchen"
+    id: light_kitchen
+    output: sx_09
+
+  - platform: monochromatic
+    name: "Lights Shower"
+    id: light_shower
+    output: sx_10
 
 
-fan: 
-  - platform: binary
-    output: sw_shower_fan
-    name: "Shower Fan"
-    id: fan_shower
 
 binary_sensor:
   - platform: gpio
     name: "Button Kitchen Outside"
-    id: btn_1
+    id: btn_kitchen_outside
     pin: 
       number: 13
       mode:
@@ -227,27 +234,27 @@ binary_sensor:
       then:
       - if:
           condition:
-            - light.is_off: light2
+            - light.is_off: light_porch_right
           then:
             - light.turn_on:
-                id: light2
-                brightness: 1.0
+                id: light_porch_right
+                brightness: .8
           else:
-            - light.turn_off: light2
+            - light.turn_off: light_porch_right
 
     on_press:
       then:
         - if:
             condition:
-              light.is_off: light2
+              light.is_off: light_porch_right
             then:
               - delay: 0.5s
               - while:
                   condition:
-                    binary_sensor.is_on: btn_1
+                    binary_sensor.is_on: btn_kitchen_outside
                   then:
                     - light.dim_relative:
-                        id: light2
+                        id: light_porch_right
                         relative_brightness: 5%
                         transition_length: 0.1s
                     - delay: 0.1s
@@ -257,11 +264,11 @@ binary_sensor:
               - while:
                   condition:
                     and:
-                      - binary_sensor.is_on: btn_1
-                      - light.is_on: light2
+                      - binary_sensor.is_on: btn_kitchen_outside
+                      - light.is_on: light_porch_right
                   then:
                     - light.dim_relative:
-                        id: light2
+                        id: light_porch_right
                         relative_brightness: -5%
                         transition_length: 0.1s
                     - delay: 0.1s
@@ -269,9 +276,9 @@ binary_sensor:
      
   - platform: gpio
     name: "Button Kitchen Master"
-    id: btn_2
+    id: btn_master
     pin: 
-      number: 21
+      number: 13
       mode:
         input: true
         pullup: true
@@ -287,71 +294,63 @@ binary_sensor:
       - if:
           condition:  # change to 1  4 6 8
             or:
-            - light.is_off: light1
-            - light.is_off: light4
-            - light.is_off: light6
-            - light.is_off: light8
-            - light.is_off: rgbw1
+            - light.is_off: light_bed
+            - light.is_off: light_hall
+            - light.is_off: light_kitchen
+            - light.is_off: light_shower
+           
           then:
             - light.turn_on: 
-                id: light1
+                id: light_hall
                 brightness: 80%
 
             - light.turn_on: 
-                id: light4
+                id: light_kitchen
                 brightness: 80%
 
             - light.turn_on: 
-                id: light6
+                id: light_shower
                 brightness: 80%
 
             - light.turn_on: 
-                id: light8
+                id: light_bed
                 brightness: 80%
 
-            - light.turn_on: 
-                id: rgbw1
-                color_mode: WHITE
-                brightness: 80%
+            
           else:
-            - light.turn_off: light1
-            - light.turn_off: light4
-            - light.turn_off: light6
-            - light.turn_off: light8
-            - light.turn_off: rgbw1
+            - light.turn_off: light_hall
+            - light.turn_off: light_kitchen
+            - light.turn_off: light_shower
+            - light.turn_off: light_bed
+            
     on_press:
       then:
         - if:
             condition:
-              light.is_off: light1
+              light.is_off: light_hall
             then:
               - delay: 0.25s
               - while:
                   condition:
-                    binary_sensor.is_on: btn_2
+                    binary_sensor.is_on: btn_master
                   then:
                     - light.dim_relative:
-                        id: light1
+                        id: light_hall
                         relative_brightness: 5%
                         transition_length: 0.1s
                   
                     - light.dim_relative:
-                        id: light4
+                        id: light_kitchen
                         relative_brightness: 5%
                         transition_length: 0.1s
                     
                     - light.dim_relative:
-                        id: light6
+                        id: light_shower
                         relative_brightness: 5%
                         transition_length: 0.1s
                     
                     - light.dim_relative:
-                        id: light8
-                        relative_brightness: 5%
-                        transition_length: 0.1s
-
-                    - light.dim_relative:
-                        id: rgbw1
+                        id: light_bed
                         relative_brightness: 5%
                         transition_length: 0.1s
                     - delay: 0.1s
@@ -360,38 +359,33 @@ binary_sensor:
               - while:
                   condition:
                     and:
-                      - binary_sensor.is_on: btn_2
-                      - light.is_on: light1
+                      - binary_sensor.is_on: btn_master
+                      - light.is_on: light_hall
                   then:
                     - light.dim_relative:
-                        id: light1
+                        id: light_hall
                         relative_brightness: -5%
                         transition_length: 0.1s
                     
                     - light.dim_relative:
-                        id: light4
+                        id: light_kitchen
                         relative_brightness: -5%
                         transition_length: 0.1s
                     
                     - light.dim_relative:
-                        id: light6
+                        id: light_shower
                         relative_brightness: -5%
                         transition_length: 0.1s
                     
                     - light.dim_relative:
-                        id: light8
-                        relative_brightness: -5%
-                        transition_length: 0.1s
-
-                    - light.dim_relative:
-                        id: rgbw1
+                        id: light_bed
                         relative_brightness: -5%
                         transition_length: 0.1s
 
                     - delay: 0.1s
   - platform: gpio
     name: "Button Kitchen"
-    id: btn_3
+    id: btn_kitchen
     pin: 
       number: 22
       mode:
@@ -406,35 +400,39 @@ binary_sensor:
       then:
       - if:
           condition:
-            - light.is_off: light1
-            - light.is_off: light4
+            - light.is_off: light_hall
+            - light.is_off: light_kitchen
           then:
             - light.turn_on:
-                id: light1
+                id: light_hall
                 
             - light.turn_on:
-                id: light4
+                id: light_kitchen
                
           else:
-            - light.turn_off: light1
-            - light.turn_off: light4
+            - light.turn_off: light_hall
+            - light.turn_off: light_kitchen
     on_press:
       then:
         - if:
             condition:
-              light.is_off: light1
+              - light.is_off: light_hall
+              - light.is_off: light_kitchen
+
             then:
               - delay: 0.25s
+              - light.turn_on: light_hall
+              - light.turn_on: light_kitchen
               - while:
                   condition:
-                    binary_sensor.is_on: btn_3
+                    binary_sensor.is_on: btn_kitchen
                   then:
                     - light.dim_relative:
-                        id: light1
+                        id: light_hall
                         relative_brightness: 5%
                         transition_length: 0.1s
                     - light.dim_relative:
-                        id: light4
+                        id: light_kitchen
                         relative_brightness: 5%
                         transition_length: 0.1s
                     - delay: 0.1s
@@ -444,24 +442,24 @@ binary_sensor:
               - while:
                   condition:
                     and:
-                      - binary_sensor.is_on: btn_3
-                      - light.is_on: light1
+                      - binary_sensor.is_on: btn_kitchen
+                      - light.is_on: light_hall
                   then:
                     - light.dim_relative:
-                        id: light1
+                        id: light_hall
                         relative_brightness: -5%
                         transition_length: 0.1s
                     - light.dim_relative:
-                        id: light4
+                        id: light_kitchen
                         relative_brightness: -5%
                         transition_length: 0.1s
                     - delay: 0.1s
   
   - platform: gpio
     name: "Button Shower Light"
-    id: btn_4
+    id: btn_shower_light
     pin: 
-      number: 4
+      number: 21
       mode:
         input: true
         pullup: true
@@ -472,20 +470,21 @@ binary_sensor:
       min_length: 10ms
       max_length: 350ms
       then:
-        light.toggle: light6
+        light.toggle: light_shower
     on_press:
       then:
         - if:
             condition:
-              light.is_off: light6
+              light.is_off: light_shower
             then:
               - delay: 0.5s
+              - light.turn_on: light_shower
               - while:
                   condition:
-                    binary_sensor.is_on: btn_4
+                    binary_sensor.is_on: btn_shower_light
                   then:
                     - light.dim_relative:
-                        id: light6
+                        id: light_shower
                         relative_brightness: 5%
                         transition_length: 0.1s
                     - delay: 0.1s
@@ -495,19 +494,19 @@ binary_sensor:
               - while:
                   condition:
                     and:
-                      - binary_sensor.is_on: btn_4
-                      - light.is_on: light6
+                      - binary_sensor.is_on: btn_shower_light
+                      - light.is_on: light_shower
                   then:
                     - light.dim_relative:
-                        id: light6
+                        id: light_shower
                         relative_brightness: -5%
                         transition_length: 0.1s
                     - delay: 0.1s
   - platform: gpio
     name: "Button Shower Fan"
-    id: btn_5
+    id: btn_shower_fan
     pin: 
-      number: 27
+      number: 4
       mode:
         input: true
         pullup: true
@@ -515,13 +514,14 @@ binary_sensor:
       min_length: 10ms
       max_length: 450ms
       then:
-        fan.toggle: fan_shower
+        fan.toggle: shower_fan
     filters:
       - invert:
       - delayed_on: 10ms
+
   - platform: gpio
     name: "Button Bed"
-    id: btn_6
+    id: btn_bed
     pin: 
       number: 0
       mode:
@@ -536,26 +536,26 @@ binary_sensor:
           then:
           - if:
               condition:
-                - light.is_off: light8
+                - light.is_off: light_bed
                
               then:
                 - light.turn_on:
-                    id: light8                
+                    id: light_bed                
               else:
-                - light.turn_off: light8
+                - light.turn_off: light_bed
     on_press:
         then:
           - if:
               condition:
-                light.is_off: light8
+                light.is_off: light_bed
               then:
                 - delay: 0.25s
                 - while:
                     condition:
-                      binary_sensor.is_on: btn_6
+                      binary_sensor.is_on: btn_bed
                     then:
                       - light.dim_relative:
-                          id: light8
+                          id: light_bed
                           relative_brightness: 5%
                           transition_length: 0.1s
                       - delay: 0.1s
@@ -565,17 +565,17 @@ binary_sensor:
                 - while:
                     condition:
                       and:
-                        - binary_sensor.is_on: btn_6
-                        - light.is_on: light8
+                        - binary_sensor.is_on: btn_bed
+                        - light.is_on: light_bed
                     then:
                       - light.dim_relative:
-                          id: light8
+                          id: light_bed
                           relative_brightness: -5%
                           transition_length: 0.1s
                       - delay: 0.1s
   - platform: gpio
     name: "Button Sink"
-    id: btn_7
+    id: btn_sink
     pin: 
       number: 2
       mode:
@@ -597,47 +597,23 @@ binary_sensor:
             - switch.turn_on: sw_valve_hw_bypass
 
   - platform: gpio
-    name: "Button Cabinet"
-    id: btn_8
+    name: "Invertor Enabled"
+    id: input_invertor_enabled
     pin: 
-      number: 36
+      sx1509: sx1509_hub
+      number: 12
       mode:
         input: true
-    filters:
-      - invert:
-      - delayed_on: 10ms
-    on_click: 
-          min_length: 10ms
-          max_length: 350ms
-          then:
-            light.toggle: rgbw1
-    on_press:
-        then:
-          - if:
-              condition:
-                light.is_off: rgbw1
-              then:
-                - delay: 0.25s
-                - while:
-                    condition:
-                      binary_sensor.is_on: btn_8
-                    then:
-                      - light.dim_relative:
-                          id: rgbw1
-                          relative_brightness: 5%
-                          transition_length: 0.1s
-                      - delay: 0.1s
-                      
-              else:
-                - delay: 0.25s
-                - while:
-                    condition:
-                      and:
-                        - binary_sensor.is_on: btn_8
-                        - light.is_on: rgbw1
-                    then:
-                      - light.dim_relative:
-                          id: rgbw1
-                          relative_brightness: -5%
-                          transition_length: 0.1s
-                      - delay: 0.1s
+        pullup: true
+      inverted: true
+
+  - platform: gpio
+    name: "Cab Light On"
+    id: input_cab_light
+    pin: 
+      sx1509: sx1509_hub
+      number: 12
+      mode:
+        input: true
+        pullup: true
+      inverted: false

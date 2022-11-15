@@ -3,6 +3,8 @@
 #include "esphome/components/number/number.h"
 #include "esphome/components/remote_base/pronto_protocol.h"
 #include "fanspeed.h"
+#include <map>
+#include <string>
 
 namespace esphome {
 namespace maxxfan_ir_climate {
@@ -15,24 +17,26 @@ using climate::ClimateSwingMode;
 using climate::ClimateFanMode;
 using climate::ClimateDeviceRestoreState;
 
+using esphome::to_string;
 using std::string;
+using std::map;
 
-// Temperature
-const float TEMP_MIN = 15.5556f;  // 60F
-const float TEMP_MAX = 29.4444f;  // 85F
-
-const char *PRESET_VENT_ONLY = "VENT ONLY";
-const char *PRESET_AIR_IN = "AIR IN";
-const char *PRESET_AIR_OUT = "AIR OUT";
-
-static map<const uint8_t, const char *> FAN_SPEEDS = {{10, " 10"}, {20, " 20"}, {30, " 30"}, {40, " 40"}, {50, " 50"},
-                                                      {60, " 60"}, {70, " 70"}, {80, " 80"}, {90, " 90"}, {100, "100"}};
+const map<const uint8_t, const char *> FAN_SPEEDS = {{10, " 10"}, {20, " 20"}, {30, " 30"}, {40, " 40"}, {50, " 50"},
+                                                     {60, " 60"}, {70, " 70"}, {80, " 80"}, {90, " 90"}, {100, "100"}};
 
 class MaxxFanIr : public climate_ir::ClimateIR {
  public:
+  // Temperature
+  const float TEMP_MIN = 15.5556f;  // 60F
+  const float TEMP_MAX = 29.4444f;  // 85F
+
+  const char *PRESET_VENT_ONLY = "VENT ONLY";
+  const char *PRESET_AIR_IN = "AIR IN";
+  const char *PRESET_AIR_OUT = "AIR OUT";
+
   MaxxFanIr();
   void set_fahrenheit(bool set);
-  void set_fanspeed_number(FanSpeed *num);
+  void set_fanspeed_component(FanSpeed *num);
   void setup() override;
   void on_fanspeed_state(float speed);
 
@@ -50,7 +54,7 @@ class MaxxFanIr : public climate_ir::ClimateIR {
   bool on_receive(remote_base::RemoteReceiveData data) override;
 
   ClimateMode mode_before_{climate::CLIMATE_MODE_OFF};
-  string custom_preset_before_{"AIR IN"};
+  std::string custom_preset_before_{"AIR IN"};
   remote_base::ProntoProtocol *pronto_;
   bool fahrenheit_ = true;
   string get_command_key();

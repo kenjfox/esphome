@@ -8,11 +8,17 @@ fan:
     output: hbridge_1
     speed_count: 100
    
+  - platform: speed
+    id: shower_fan
+    name: "Shower Fan"
+    restore_mode: RESTORE_DEFAULT_OFF
+    output: hbridge_2
+    speed_count: 100
 
 climate:
   - platform: thermostat
     name: "Thermostat Climate Controller"
-    sensor: temp_inside
+    sensor: temp_garage
     default_target_temperature_low: 65 °F
     default_target_temperature_high: 80 °F
     min_cooling_off_time: 300s

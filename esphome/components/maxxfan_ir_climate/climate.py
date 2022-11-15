@@ -65,4 +65,4 @@ async def to_code(config):
         max_value=conf[CONF_MAX_VALUE],
         step=conf[CONF_STEP],
     )
-    cg.add(maxxfan.set_fanspeed_number(var))
+    cg.add(maxxfan.set_fanspeed_component(var))

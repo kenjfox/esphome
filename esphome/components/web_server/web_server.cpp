@@ -803,7 +803,14 @@ void WebServer::handle_climate_request(AsyncWebServerRequest *request, const Url
       String mode = request->getParam("mode")->value();
       call.set_mode(mode.c_str());
     }
-
+    if (request->hasParam("custom_preset")) {
+      String preset = request->getParam("custom_preset")->value();
+      call.set_preset(preset.c_str());
+    }
+    if (request->hasParam("fan_mode")) {
+      String fmode = request->getParam("fan_mode")->value();
+      call.set_fan_mode(fmode.c_str());
+    }
     if (request->hasParam("target_temperature_high")) {
       String value = request->getParam("target_temperature_high")->value();
       optional<float> value_f = parse_number<float>(value.c_str());
@@ -833,7 +840,7 @@ void WebServer::handle_climate_request(AsyncWebServerRequest *request, const Url
 }
 
 // Longest: HORIZONTAL
-#define PSTR_LOCAL(mode_s) strncpy_P(__buf, (PGM_P)((mode_s)), 15)
+#define PSTR_LOCAL(mode_s) strncpy_P(__buf, (PGM_P) ((mode_s)), 15)
 
 std::string WebServer::climate_json(climate::Climate *obj, JsonDetail start_config) {
   return json::build_json([obj, start_config](JsonObject root) {

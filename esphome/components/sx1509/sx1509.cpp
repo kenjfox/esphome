@@ -70,26 +70,6 @@ void SX1509Component::digital_write(uint8_t pin, bool bit_value) {
       temp_reg_data &= ~(1 << pin);
     }
     this->write_byte_16(REG_DATA_B, temp_reg_data);
-  } else {
-    // Otherwise the pin is an input, pull-up/down
-    uint16_t temp_pullup = 0;
-    this->read_byte_16(REG_PULL_UP_B, &temp_pullup);
-    uint16_t temp_pull_down = 0;
-    this->read_byte_16(REG_PULL_DOWN_B, &temp_pull_down);
-
-    if (bit_value) {
-      // if HIGH, do pull-up, disable pull-down
-      temp_pullup |= (1 << pin);
-      temp_pull_down &= ~(1 << pin);
-      this->write_byte_16(REG_PULL_UP_B, temp_pullup);
-      this->write_byte_16(REG_PULL_DOWN_B, temp_pull_down);
-    } else {
-      // If LOW do pull-down, disable pull-up
-      temp_pull_down |= (1 << pin);
-      temp_pullup &= ~(1 << pin);
-      this->write_byte_16(REG_PULL_UP_B, temp_pullup);
-      this->write_byte_16(REG_PULL_DOWN_B, temp_pull_down);
-    }
   }
 }
 /*
@@ -112,13 +92,29 @@ void SX1509Component::pin_mode(uint8_t pin, gpio::Flags flags) {
   if (flags == gpio::FLAG_OUTPUT) {
     this->ddr_mask_ &= ~(1 << pin);  // 0 = output
   } else {
-    this->ddr_mask_ |= (1 << pin);     // 1 = input
-    this->set_input_level(pin, true);  // TODO: change to config parameter.
+    this->ddr_mask_ |= (1 << pin);
+
+    uint16_t temp_pullup;
+    this->read_byte_16(REG_PULL_UP_B, &temp_pullup);
+    uint16_t temp_pulldown;
+    this->read_byte_16(REG_PULL_DOWN_B, &temp_pulldown);
+
+    if (flags & gpio::FLAG_PULLUP) {
+      temp_pullup |= (1 << pin);
+    } else {
+      temp_pullup &= ~(1 << pin);
+    }
+
+    if (flags & gpio::FLAG_PULLDOWN) {
+      temp_pulldown |= (1 << pin);
+    } else {
+      temp_pulldown &= ~(1 << pin);
+    }
+
+    this->write_byte_16(REG_PULL_UP_B, temp_pullup);
+    this->write_byte_16(REG_PULL_DOWN_B, temp_pulldown);
   }
   this->write_byte_16(REG_DIR_B, this->ddr_mask_);
-
-  if (flags & gpio::FLAG_PULLUP)
-    digital_write(pin, true);
 }
 
 void SX1509Component::setup_led_driver(uint8_t pin) {
@@ -128,10 +124,6 @@ void SX1509Component::setup_led_driver(uint8_t pin) {
   this->read_byte_16(REG_INPUT_DISABLE_B, &temp_word);
   temp_word |= (1 << pin);
   this->write_byte_16(REG_INPUT_DISABLE_B, temp_word);
-
-  this->read_byte_16(REG_PULL_UP_B, &temp_word);
-  temp_word &= ~(1 << pin);
-  this->write_byte_16(REG_PULL_UP_B, temp_word);
 
   this->ddr_mask_ &= ~(1 << pin);  // 0=output
   this->write_byte_16(REG_DIR_B, this->ddr_mask_);

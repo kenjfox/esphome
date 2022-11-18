@@ -1,0 +1,109 @@
+substitutions:
+  name: "inputtest"
+  lower_devicename: $name
+  devicename: "inputtest"
+  config_version: "v2022.11.09.001"
+  # wifi_fast_connect: "false"
+  # wifi_reboot_timeout: 0s
+  accuracy: "2"
+  password: "govango!"
+  device_verbose_name: "input testing hardware"
+
+esphome:
+  name: $name
+    
+esp32:
+  board: esp32dev
+  variant: esp32
+  framework:
+    type: esp-idf
+    version: recommended
+
+# Enable logging
+logger:
+  #baud_rate: 115200
+  level: DEBUG
+  logs:
+    sensor: WARN
+    gpio.binary_sensor: WARN
+    light: WARN
+    mpu6050: WARN
+    pulse_counter: WARN
+    sx1509: DEBUG
+    text_sensor: WARN
+    dallas.sensor: ERROR
+    bme280.sensor: WARN
+    victron_smart_shunt: ERROR 
+    uart_debug: WARN
+    ledc: WARN
+    climate: WARN
+    fan: WARN
+
+# Enable Home Assistant API
+api:
+  password: $password
+
+ota:
+  password: $password
+
+i2c:
+   - id: bus_a
+     sda: 21
+     scl: 22
+     scan: true
+     frequency: 100kHz
+sx1509:
+  - id: sx1509_hub
+    address: 0x71
+binary_sensor:
+  - platform: gpio
+    name: "Inverter Enabled"
+    id: input_inverter_enabled
+    pin: 
+      sx1509: sx1509_hub
+      number: 12
+      mode:
+        input: true
+        pullup: true
+      inverted: true
+    on_click: 
+      min_length: 10ms
+      max_length: 350ms
+      then:
+      - if:
+          condition:
+            - light.is_off: light0
+          then:
+            - light.turn_on:
+                id: light0
+                brightness: .8
+          else:
+            - light.turn_off: light0
+
+output: 
+   # sx1509 
+  - platform: sx1509
+    id: sx_00
+    sx1509_id: sx1509_hub   
+    pin: 0
+    inverted: true
+
+light: 
+  - platform: monochromatic
+    id: light0
+    output: sx_00
+
+
+
+packages:
+  system: !include system.yaml
+  #dallas: !include dallas.yaml
+  #mpu6050: !include mpu6050.yaml
+  #bme280.yaml: !include bme280.yaml
+  # tanklevelsensor: !include tanklevelsensor.yaml
+  #waterflowsensor: !include waterflowsensor.yaml
+  #gpio: !include gpio.yaml
+  #victron: !include victron_smartshunt.yaml
+  #climate: !include climate.yaml
+
+

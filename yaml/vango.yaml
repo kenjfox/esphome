@@ -26,14 +26,14 @@ logger:
   logs:
     sensor: WARN
     gpio.binary_sensor: WARN
-    light: DEBUG
+    light: WARN
     mpu6050: WARN
     pulse_counter: WARN
     sx1509: DEBUG
     text_sensor: WARN
-    dallas.sensor: DEBUG
+    dallas.sensor: ERROR
     bme280.sensor: WARN
-    victron_smart_shunt: WARN  
+    victron_smart_shunt: ERROR 
     uart_debug: WARN
     ledc: WARN
     climate: WARN
@@ -48,17 +48,17 @@ ota:
 
 i2c:
    - id: bus_a
-     sda: 12
-     scl: 14
+     sda: 21
+     scl: 22
      scan: true
-     frequency: 50kHz
+     frequency: 100kHz
 
 
 packages:
   system: !include system.yaml
   dallas: !include dallas.yaml
-  # mpu6050: !include mpu6050.yaml
-  # bme280.yaml: !include bme280.yaml
+  mpu6050: !include mpu6050.yaml
+  bme280.yaml: !include bme280.yaml
   # tanklevelsensor: !include tanklevelsensor.yaml
   waterflowsensor: !include waterflowsensor.yaml
   gpio: !include gpio.yaml

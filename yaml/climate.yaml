@@ -8,12 +8,12 @@ fan:
     output: hbridge_1
     speed_count: 100
    
-  - platform: speed
+  - platform: binary
     id: shower_fan
     name: "Shower Fan"
     restore_mode: RESTORE_DEFAULT_OFF
-    output: hbridge_2
-    speed_count: 100
+    output: highside_switch_1
+    
 
 climate:
   - platform: thermostat

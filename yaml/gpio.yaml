@@ -1,6 +1,6 @@
 sx1509:
   - id: sx1509_hub
-    address: 0x71
+    address: 0x3E
    
 
 switch: 
@@ -10,10 +10,23 @@ switch:
     id: sw_battery_heater
     pin:
       sx1509: sx1509_hub
-      number: 9
+      number: 11
       mode:
         output: true
-      inverted: true
+      inverted: false
+  - platform: gpio
+    name: "Inverter"
+    id: "sw_inverter"
+    pin:
+      sx1509: sx1509_hub
+      number: 13
+      mode:
+        output: true
+      inverted: false
+    on_turn_on:
+    - delay: 250ms
+    - switch.turn_off: sw_inverter
+
   - platform: gpio
     name: "Diesel Heater"
     pin:
@@ -21,16 +34,19 @@ switch:
       number: 14
       mode:
         output: true
-      inverted: true
+      inverted: false
   - platform: gpio
     name: "Audio"
+    id: sw_audio
     pin:
       sx1509: sx1509_hub
       number: 15
       mode:
         output: true
-      inverted: true
+      inverted: false
   
+ 
+
   - platform: gpio
     name: "Valve Water Heater"
     pin: 32
@@ -62,6 +78,8 @@ switch:
     name: "Valve Coolant Recirculator"
     pin: 5
 
+ 
+    
 output: 
    # sx1509 
   - platform: sx1509
@@ -81,6 +99,8 @@ output:
     pin: 2
     sx1509_id: sx1509_hub
     inverted: true
+    min_power: .3
+    zero_means_zero: true
 
   - platform: sx1509
     id: sx_03
@@ -138,7 +158,7 @@ output:
 
 # sx 12 is input
 
-# 13- 15 are photrelays
+# 13- 15 are photorelays
 
 
 
@@ -146,15 +166,15 @@ output:
 #esp32 gpio
   - platform: ledc
     frequency: "25000Hz"
-    min_power: .22
+    min_power: .22  
     pin: 19
     id: hbridge_1
-    
-  - platform: ledc
-    frequency: "25000Hz"
+    zero_means_zero : true
+   
+    # this is a high-side switch.  It switches 12v input provided through adjacent connector pin
+  - platform: gpio
+    id: highside_switch_1  
     pin: 15
-    id: hbridge_2   
-
 
 
    
@@ -221,7 +241,7 @@ binary_sensor:
     name: "Button Kitchen Outside"
     id: btn_kitchen_outside
     pin: 
-      number: 13
+      number: 27
       mode:
         input: true
         pullup: true
@@ -387,7 +407,7 @@ binary_sensor:
     name: "Button Kitchen"
     id: btn_kitchen
     pin: 
-      number: 22
+      number: 14
       mode:
         input: true
         pullup: true
@@ -459,7 +479,7 @@ binary_sensor:
     name: "Button Shower Light"
     id: btn_shower_light
     pin: 
-      number: 21
+      number: 12
       mode:
         input: true
         pullup: true
@@ -597,8 +617,8 @@ binary_sensor:
             - switch.turn_on: sw_valve_hw_bypass
 
   - platform: gpio
-    name: "Invertor Enabled"
-    id: input_invertor_enabled
+    name: "Inverter Enabled"
+    id: input_inverter_enabled
     pin: 
       sx1509: sx1509_hub
       number: 12
@@ -611,9 +631,7 @@ binary_sensor:
     name: "Cab Light On"
     id: input_cab_light
     pin: 
-      sx1509: sx1509_hub
-      number: 12
+      number: 36
       mode:
         input: true
-        pullup: true
-      inverted: false
+      inverted: true

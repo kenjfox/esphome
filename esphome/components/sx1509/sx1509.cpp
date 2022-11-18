@@ -92,13 +92,28 @@ void SX1509Component::digital_write(uint8_t pin, bool bit_value) {
     }
   }
 }
+/*
+Enables high input mode for each [input-configured] IO
+0 : OFF. VIH max = 3.6V and VCCx min = 1.2V
+1 : ON. VIH max = 5.5V and VCCx min = 1.65V
+*/
+void SX1509Component::set_input_level(uint8_t pin, bool high) {
+  this->read_byte_16(REG_HIGH_INPUT_B, &this->high_input_mask_);
+  if (high) {
+    this->high_input_mask_ |= (1 << pin);  // 1 = high
+  } else {
+    this->high_input_mask_ &= ~(1 << pin);
+  }
+  this->write_byte_16(REG_HIGH_INPUT_B, this->high_input_mask_);
+}
 
 void SX1509Component::pin_mode(uint8_t pin, gpio::Flags flags) {
   this->read_byte_16(REG_DIR_B, &this->ddr_mask_);
   if (flags == gpio::FLAG_OUTPUT) {
-    this->ddr_mask_ &= ~(1 << pin);
+    this->ddr_mask_ &= ~(1 << pin);  // 0 = output
   } else {
-    this->ddr_mask_ |= (1 << pin);
+    this->ddr_mask_ |= (1 << pin);     // 1 = input
+    this->set_input_level(pin, true);  // TODO: change to config parameter.
   }
   this->write_byte_16(REG_DIR_B, this->ddr_mask_);
 
@@ -129,8 +144,9 @@ void SX1509Component::setup_led_driver(uint8_t pin) {
   this->read_byte(REG_MISC, &temp_byte);
   temp_byte &= ~(1 << 7);  // set linear mode bank B
   temp_byte &= ~(1 << 3);  // set linear mode bank A
-  temp_byte |= 0x70;       // Frequency of the LED Driver clock ClkX of all IOs:  = fOSC/(2^(RegMisc[6:4]-1))
+  temp_byte |= 0b001;      // Frequency of the LED Driver clock ClkX of all IOs:  = fOSC/(2^(RegMisc[6:4]-1))
   this->write_byte(REG_MISC, temp_byte);
+  ESP_LOGCONFIG(TAG, "setup_led reg_misc = %d", temp_byte);
 
   this->read_byte_16(REG_LED_DRIVER_ENABLE_B, &temp_word);
   temp_word |= (1 << pin);
@@ -150,13 +166,15 @@ void SX1509Component::clock_(uint8_t osc_source, uint8_t osc_pin_function, uint8
 
   osc_divider = clamp<uint8_t>(osc_divider, 1, 7u);
   this->clk_x_ = 2000000;
-  osc_divider = (osc_divider & 0b111) << 4;  // 3-bit value, bits 6:4
+  osc_divider = 0b001 << 4;  // 3-bit value, bits 6:4
 
   uint8_t reg_misc = 0;
   this->read_byte(REG_MISC, &reg_misc);
-  reg_misc &= ~(0b111 << 4);
+  reg_misc &= ~(0b001 << 4);
   reg_misc |= osc_divider;
   this->write_byte(REG_MISC, reg_misc);
+
+  ESP_LOGCONFIG(TAG, "clock_ reg_misc = %d", reg_misc);
 }
 
 void SX1509Component::setup_keypad_() {

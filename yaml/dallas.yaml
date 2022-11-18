@@ -30,3 +30,15 @@ sensor:
     address: 0x663c01d0753c9728
     name: "Temp House Battery"
     id: temp_house_battery
+
+# new
+  - platform: dallas
+    address:  0x573c01f09685b528
+    name: "Temp Attic"
+    id: temp_attic
+
+  - platform: dallas
+    address: 0x1e3c01f096a98928
+    name: "Temp Refrigerator Cabinet"
+    id: temp_refrigerator_cabinet
+

@@ -51,7 +51,7 @@ class SX1509Component : public Component, public i2c::I2CDevice {
   void register_keypad_binary_sensor(SX1509Processor *binary_sensor) {
     this->keypad_binary_sensors_.push_back(binary_sensor);
   }
-  void setup_led_driver(uint8_t pin);
+  void setup_led_driver(uint8_t pin, uint8_t freq, bool log);
   void set_input_level(uint8_t pin, bool high);
 
  protected:

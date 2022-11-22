@@ -4,63 +4,51 @@ sensor:
     pin: 34
     id: freshwater_adc
     name: "Freshwater Tank ADC"
-    attenuation: 11db
+    attenuation: 2.5db
     update_interval: 5s
+    # filters:
+    # - sliding_window_moving_average:
+    #     window_size: 15
+    #     send_every: 5
 
-  # - platform: tank_level_sensor
-  #   id: freshwater_level_sensor
-  #   name: "Freshwater Tank Level"
-  #   adc_sensor: freshwater_adc
-  #   tank_capacity: 25.0
-  #   output_pin: 32
-  #   margin_percent: 6
-  #   update_interval: 5s
-  #   percent_full:
-  #     id: sensor_percent
-  #     name: "Freshwater Percent Left"
-  #   amount_left:
-  #     id: sensor_amt_left
-  #     name: "Freshwater Remaining"
-  #   tank_levels:
-  #     - voltage: .93
-  #       percent_full: 0
-  #     - voltage: 1.32
-  #       percent_full: 25
-  #     - voltage: 1.48
-  #       percent_full: 50
-  #     - voltage: 1.80
-  #       percent_full: 75
-  #     - voltage: 2.19
-  #       percent_full: 100
+  - platform: tank_level_sensor
+    id: freshwater_level_sensor
+    name: "Freshwater Tank Level"
+    adc_sensor: freshwater_adc
+    voltage_high: 1.2
+    voltage_low: 1.04
+    invert: false
+    auto_range: false
+    tank_capacity: 25.0
+    update_interval: 5s
+    percent_full:
+      id: sensor_percent_fresh
+      name: "Freshwater Percent Left"
+    amount_left:
+      id: sensor_amt_left
+      name: "Freshwater Remaining"
+ 
   - platform: adc
     pin: 35
     id: graywater_adc
     name: "Graywater Tank ADC"
-    attenuation: 11db
+    attenuation: 2.5db
     update_interval: 5s
-  # - platform: tank_level_sensor
-  #   id: graywater_level_sensor
-  #   name: "Graywater Tank Level"
-  #   adc_sensor: graywater_adc
-  #   tank_capacity: 20.0
-  #   output_pin: 33
-  #   margin_percent: 3
-  #   update_interval: 5s
-  #   percent_full:
-  #     id: sensor_percent_grey
-  #     name: "Graywater Percent Full"
-  #   amount_left:
-  #     id: sensor_amt_left_grey
-  #     name: "Greywater Used"
-  #   tank_levels:
-  #     - voltage: .94
-  #       percent_full: 0
-  #     - voltage: 1.43
-  #       percent_full: 25
-  #     - voltage: 1.55
-  #       percent_full: 50
-  #     - voltage: 1.85
-  #       percent_full: 75
-  #     - voltage: 2.11
-  #       percent_full: 100
+
+  - platform: tank_level_sensor
+    id: graywater_level_sensor
+    name: "Graywater Tank Level"
+    adc_sensor: graywater_adc
+    tank_capacity: 20.0
+    voltage_high: 1.2
+    voltage_low: 1
+    invert: false
+    auto_range: false
+    update_interval: 5s
+    percent_full:
+      id: sensor_percent_grey
+      name: "Graywater Percent Full"
+    amount_left:
+      id: sensor_amt_left_grey
+      name: "Greywater Used"
  

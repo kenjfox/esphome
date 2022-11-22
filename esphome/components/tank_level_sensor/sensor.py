@@ -2,7 +2,7 @@ import esphome.codegen as cg
 import esphome.components.adc.sensor as adc
 import esphome.config_validation as cv
 from esphome.components import sensor
-from esphome import pins
+
 from esphome.const import (
     CONF_ID,
     ICON_WATER_PERCENT,
@@ -12,10 +12,12 @@ from esphome.const import (
 
 
 CONF_SENSOR_PIN = "sensor_pin"
-CONF_OUTPUT_PIN = "output_pin"
 CONF_TANK_CAPACITY = "tank_capacity"
 CONF_MARGIN = "margin_percent"
 CONF_LEVELS = "tank_levels"
+CONF_VOLTAGE_HIGH = "voltage_high"
+CONF_VOLTAGE_LOW = "voltage_low"
+CONF_AUTO_RANGE = "auto_range"
 CONF_VOLTAGE = "voltage"
 CONF_TANK_PERCENT_FULL = "percent_full"
 CONF_TANK_UNITS_LEFT = "amount_left"
@@ -23,6 +25,7 @@ CONF_ADC_SENSOR = "adc_sensor"
 ICON_WAVES_ARROW_UP = "mdi:waves-arrow-up"
 UNIT_GALLON = "gal"
 UNIT_LITRE = "L"
+CONF_INVERT = "invert"
 
 tank_level_sensor_ns = cg.esphome_ns.namespace("tank_level_sensor")
 
@@ -44,10 +47,10 @@ tank_capacity_schema = sensor.sensor_schema(
 )
 
 
-entry = {
-    cv.Required(CONF_VOLTAGE): cv.float_,
-    cv.Required(CONF_TANK_PERCENT_FULL): cv.float_,
-}
+# entry = {
+#     cv.Required(CONF_VOLTAGE): cv.float_,
+#     cv.Required(CONF_TANK_PERCENT_FULL): cv.float_,
+# }
 
 
 CONFIG_SCHEMA = (
@@ -59,9 +62,10 @@ CONFIG_SCHEMA = (
         {
             cv.GenerateID(): cv.declare_id(TankLevelSensor),
             cv.Required(CONF_ADC_SENSOR): cv.use_id(adc.ADCSensor),
-            cv.Required(CONF_OUTPUT_PIN): pins.gpio_output_pin_schema,
-            cv.Required(CONF_MARGIN): cv.float_,
-            cv.Required(CONF_LEVELS): cv.All(cv.ensure_list(entry), cv.Length(min=2)),
+            cv.Required(CONF_AUTO_RANGE): cv.boolean,
+            cv.Required(CONF_VOLTAGE_HIGH): cv.float_,
+            cv.Required(CONF_VOLTAGE_LOW): cv.float_,
+            cv.Optional(CONF_INVERT, default=False): cv.boolean,
             cv.Optional(CONF_TANK_CAPACITY): cv.float_,
             cv.Optional(CONF_TANK_PERCENT_FULL): tank_level_schema,
             cv.Optional(CONF_TANK_UNITS_LEFT): tank_capacity_schema,
@@ -97,8 +101,17 @@ async def to_code(config):
         conf = config[CONF_MARGIN]
         cg.add(var.set_margin_percent(conf))
 
-    for lvl in config[CONF_LEVELS]:
-        cg.add(var.add_level(lvl[CONF_VOLTAGE], lvl[CONF_TANK_PERCENT_FULL]))
+    conf = config[CONF_VOLTAGE_HIGH]
+    cg.add(var.set_voltage_high(conf))
 
-    out_pin = await cg.gpio_pin_expression(config[CONF_OUTPUT_PIN])
-    cg.add(var.set_output_pin(out_pin))
+    conf = config[CONF_VOLTAGE_LOW]
+    cg.add(var.set_voltage_low(conf))
+
+    conf = config[CONF_INVERT]
+    cg.add(var.set_invert(conf))
+
+    conf = config[CONF_AUTO_RANGE]
+    cg.add(var.set_auto_range(conf))
+
+    # for lvl in config[CONF_LEVELS]:
+    #     cg.add(var.add_level(lvl[CONF_VOLTAGE], lvl[CONF_TANK_PERCENT_FULL]))

@@ -9,7 +9,7 @@ sensor:
     name: "Temp Coolant"
     id: temp_coolant
   - platform: dallas
-    address: 0xd100000cf3191328
+    address: 0x923c01d07504bc28
     name: "Temp Freshwater"
     id: temp_freshwater
 #outside temp
@@ -17,10 +17,12 @@ sensor:
     address: 0x5f3c01d07581f428
     name: "Temp Outside"
     id: temp_outside
+    
   - platform: dallas
-    address: 0x923c01d07504bc28
-    name: "Temp Hot Water" 
-    id: temp_hot_water
+    address: 0xd100000cf3191328
+    name: "Temp HW Recirculator" 
+    id: temp_hw_recirc
+
   - platform: dallas
     address: 0x593c01d075049028
     name: "Temp Garage"

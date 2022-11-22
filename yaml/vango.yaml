@@ -1,8 +1,8 @@
 substitutions:
-  name: "vango2"
+  name: "vango"
   lower_devicename: $name
-  devicename: "Vango2"
-  config_version: "v2022.11.09.001"
+  devicename: "Vango"
+  config_version: "v2022.11.18.001"
   # wifi_fast_connect: "false"
   # wifi_reboot_timeout: 0s
   accuracy: "2"
@@ -26,18 +26,21 @@ logger:
   logs:
     sensor: WARN
     gpio.binary_sensor: WARN
-    light: WARN
+    light: DEBUG
     mpu6050: WARN
     pulse_counter: WARN
     sx1509: DEBUG
     text_sensor: WARN
-    dallas.sensor: ERROR
+    dallas.sensor: WARN
     bme280.sensor: WARN
     victron_smart_shunt: ERROR 
     uart_debug: WARN
     ledc: WARN
     climate: WARN
     fan: WARN
+    tank_level.sensor: WARN
+    monochromatic: DEBUG
+
 
 # Enable Home Assistant API
 api:
@@ -59,7 +62,7 @@ packages:
   dallas: !include dallas.yaml
   mpu6050: !include mpu6050.yaml
   bme280.yaml: !include bme280.yaml
-  # tanklevelsensor: !include tanklevelsensor.yaml
+  tanklevelsensor: !include tanklevelsensor.yaml
   waterflowsensor: !include waterflowsensor.yaml
   gpio: !include gpio.yaml
   victron: !include victron_smartshunt.yaml

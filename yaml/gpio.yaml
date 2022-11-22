@@ -14,6 +14,7 @@ switch:
       mode:
         output: true
       inverted: false
+
   - platform: gpio
     name: "Inverter"
     id: "sw_inverter"
@@ -27,6 +28,20 @@ switch:
     - delay: 250ms
     - switch.turn_off: sw_inverter
 
+
+  - platform: template
+    name: "Enable Inverter"
+    lambda: |-
+      if (id(input_inverter_enabled).state) {
+        return true;
+      } else {
+        return false;
+      }
+    turn_on_action:
+      - switch.turn_on: sw_inverter
+    turn_off_action:
+      - switch.turn_on: sw_inverter
+    
   - platform: gpio
     name: "Diesel Heater"
     pin:
@@ -45,16 +60,22 @@ switch:
         output: true
       inverted: false
   
- 
+  - platform: output
+    name: "Water Pump"
+    id: sw_water_pump
+    output: sx_01
+      
 
   - platform: gpio
     name: "Valve Water Heater"
+    id: sw_valve_water_heater
     pin: 32
 
   - platform: gpio
     name: "Valve Rear Heater"
     id: sw_valve_rear_heater
     pin: 33
+    inverted: true
 
   - platform: gpio
     name: "Valve HW Bypass"
@@ -78,7 +99,8 @@ switch:
     name: "Valve Coolant Recirculator"
     pin: 5
 
- 
+
+
     
 output: 
    # sx1509 
@@ -87,74 +109,126 @@ output:
     sx1509_id: sx1509_hub   
     pin: 0
     inverted: true
+    min_power: .0001
+    max_power: 1
+    zero_means_zero: true
+    logarithmic: false
+    frequency: 3
 
   - platform: sx1509
     id: sx_01
     sx1509_id: sx1509_hub
     pin: 1
     inverted: true
+   
 
   - platform: sx1509
     id: sx_02
     pin: 2
     sx1509_id: sx1509_hub
     inverted: true
-    min_power: .3
+    min_power: 0
+    max_power: 1
     zero_means_zero: true
+    logarithmic: false
+    frequency: 3
 
   - platform: sx1509
     id: sx_03
     sx1509_id: sx1509_hub
     pin: 3
     inverted: true
+    min_power: 0
+    max_power: 1
+    zero_means_zero: true
+    logarithmic: false
+    frequency: 3
 
   - platform: sx1509
     sx1509_id: sx1509_hub
     id: sx_04
     pin: 4
     inverted: true
+    min_power: 0.0001
+    max_power: 1
+    zero_means_zero: true
+    logarithmic: false
+    frequency: 7
 
+#porch left
   - platform: sx1509
     sx1509_id: sx1509_hub
     id: sx_05
     pin: 5
     inverted: true
-
+    min_power: 0.003
+    max_power: 1
+    zero_means_zero: true
+    logarithmic: true
+    frequency: 3
+#porch rigth
   - platform: sx1509
     sx1509_id: sx1509_hub
     id: sx_06
     pin: 6
     inverted: true
+    min_power: 0.003
+    max_power: 1
+    zero_means_zero: true
+    logarithmic: true
+    frequency: 3
 
   - platform: sx1509
     sx1509_id: sx1509_hub
     id: sx_07
     pin: 7
     inverted: true
+    min_power: 0
+    max_power: 1
+    zero_means_zero: true
+    logarithmic: false
+    frequency: 3
 
   - platform: sx1509
     sx1509_id: sx1509_hub
     id: sx_08
     pin: 8
     inverted: true
+    min_power: 0
+    max_power: 1
+    zero_means_zero: true
+    logarithmic: false
+    frequency: 3
 
   - platform: sx1509
     sx1509_id: sx1509_hub
     id: sx_09
     pin: 9
     inverted: true
+    min_power: 0
+    max_power: 1
+    frequency: 3
+    zero_means_zero: true
+    logarithmic: false
 
   - platform: sx1509
     sx1509_id: sx1509_hub
     id: sx_10
     pin: 10
     inverted: true
+    min_power: 0
+    max_power: 1
+    zero_means_zero: true
+    logarithmic: false
+    frequency: 3
+
 
   - platform: sx1509
     sx1509_id: sx1509_hub
     id: sx_11
     pin: 11
     inverted: true
+    
 
 # sx 12 is input
 
@@ -165,8 +239,8 @@ output:
 
 #esp32 gpio
   - platform: ledc
-    frequency: "25000Hz"
-    min_power: .22  
+    frequency: "29296Hz"
+    min_power: .29
     pin: 19
     id: hbridge_1
     zero_means_zero : true
@@ -183,58 +257,85 @@ light:
     name: "Lights Rear Flood"
     id: light_rear_flood
     output: sx_00
-
-  # - platform: monochromatic
-  #   name: "Unknown"
-  #   id: light_unkown
-  #   output: sx_01
-
+    gamma_correct: 0
+    effects:
+    - strobe:
+          colors:
+            - state: true
+              brightness: 100%
+              duration: 10ms
+            - state: false
+              duration: 50ms
+  
   - platform: monochromatic
     name: "Lights Bed"
     id: light_bed
     output: sx_02
+    gamma_correct: 1.1
 
   - platform: monochromatic
     name: "Button Backlight"
     id: light_button
     output: sx_03
+    gamma_correct: 1.1
 
   - platform: monochromatic
     name: "Lights Cab"
     id: light_cab
     output: sx_04
+    gamma_correct: 0
 
   - platform: monochromatic
     name: "Lights Porch Right"
     id: light_porch_right
     output: sx_05
+    gamma_correct: 1.1
+    effects:
+    - strobe:
+          colors:
+            - state: true
+              brightness: 100%
+              duration: 10ms
+            - state: false
+              duration: 50ms
 
   - platform: monochromatic
     name: "Lights Porch Left"
     id: light_porch_left
     output: sx_06
+    gamma_correct: 1.1
+    effects:
+    - strobe:
+          colors:
+            - state: true
+              brightness: 100%
+              duration: 10ms
+            - state: false
+              duration: 50ms
 
   - platform: monochromatic
     name: "Lights Garage"
     id: light_garage
     output: sx_07
+    gamma_correct: 1.1
 
   - platform: monochromatic
     name: "Lights Hall"
     id: light_hall
     output: sx_08
+    gamma_correct: 1.1
 
   - platform: monochromatic
     name: "Lights Kitchen"
     id: light_kitchen
     output: sx_09
+    gamma_correct: 1.1
 
   - platform: monochromatic
     name: "Lights Shower"
     id: light_shower
     output: sx_10
-
-
+    gamma_correct: 1.1
 
 binary_sensor:
   - platform: gpio

@@ -67,15 +67,16 @@ binary_sensor:
               light.is_off: ${device_id}
             then:
               - delay: 0.5s
+              - light.turn_on: ${device_id}
               - while:
                   condition:
                     binary_sensor.is_on: ${button_id}
                   then:
                     - light.dim_relative:
                         id: ${device_id}
-                        relative_brightness: 5%
-                        transition_length: 0.1s
-                    - delay: 0.1s
+                        relative_brightness: 2%
+                        transition_length: 0s
+                    - delay: 0.25s
                     
             else:
               - delay: 0.5s
@@ -103,25 +104,45 @@ light:
     effects:
       - random:
       - strobe:
+          name: Strobe Effect With Violet
+          colors:
+            - state: true
+              brightness: 100%
+              red: 100%
+              green: 0%
+              blue: 100%
+              white: 0%
+              duration: 10ms
+            - state: false
+              duration: 50ms
+            
       - flicker:
 
 output:
   - platform: ledc
     pin: GPIO1 # default pin is 12
-    frequency: 25000 Hz
+    frequency: 29296Hz 
     id: pwm_r
+    min_power: .02
+    zero_means_zero: true
 
   - platform: ledc
     pin: GPIO2
-    frequency: 25000 Hz
+    frequency: 29296Hz 
     id: pwm_g
+    min_power: .02
+    zero_means_zero: true
 
   - platform: ledc
     pin: GPIO3 # default pin is 14
-    frequency: 25000 Hz
+    frequency: 29296Hz 
     id: pwm_b
+    min_power: .02
+    zero_means_zero: true
 
   - platform: ledc
     pin: GPIO4 #default pin is 4
-    frequency: 25000 Hz
+    frequency: 29296Hz 
     id: pwm_w
+    min_power: .02
+    zero_means_zero: true

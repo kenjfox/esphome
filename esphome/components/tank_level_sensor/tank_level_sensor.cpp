@@ -11,8 +11,8 @@ namespace tank_level_sensor {
 
 static const char *const TAG = "tank_level.sensor";
 static const int NO_OF_SAMPLES = 32;
-static const int PAUSE_INTERVALS = 1000;
-static const uint32_t RESTORE_STATE_VERSION = 0x848EF6ADUL;
+static const int PAUSE_INTERVALS = 100;
+static const uint32_t RESTORE_STATE_VERSION = 0x848EF6BDUL;
 
 void TankLevelSensor::restore_state_() {
   this->rtc_ = global_preferences->make_preference<TankLevelSensorRestoreState>(this->get_object_id_hash() ^
@@ -80,27 +80,36 @@ void TankLevelSensor::setup() {
   this->pause_count_ = 0;
 
   this->adc_sensor_->set_update_interval(2147483646);
-  this->adc_sensor_->set_internal(true);
+  this->adc_sensor_->set_internal(false);
 
   // reading average values is slow, so do this outside of the update method
   this->set_interval("level_check", 5, [this]() { this->read_voltage(); });
 }
 void TankLevelSensor::read_voltage() {
   if (this->pause_count_ > 0) {
+    // if (this->pause_count_ % 10 == 0)
+    //   ESP_LOGD(TAG, "%s\t pausing. pause count: %d", this->get_object_id().c_str(), this->pause_count_);
     this->pause_count_--;
+
     return;
   }
-
-  this->adc_reading_ += this->adc_sensor_->sample();
+  if (this->sample_count_ == 0)
+    this->adc_reading_ = 0;
+  float v = this->adc_sensor_->sample();
+  this->adc_reading_ += v;
   this->sample_count_++;
 
   if (this->sample_count_ >= NO_OF_SAMPLES) {
     this->adc_reading_ /= this->sample_count_;
     this->last_level_ = this->get_tank_level(this->adc_reading_);
     this->sample_count_ = 0;
+
     this->pause_count_ = PAUSE_INTERVALS;  // pause from sampling until PAUSE_INTERVALS of the loop
-    ESP_LOGD(TAG, "'%s': Got voltage=%.4fV\tlevel=%.1f", this->get_name().c_str(), this->adc_reading_,
+    ESP_LOGD(TAG, "'%s': Got voltage=%.4fV\tAvg :%.2fV\tlevel=%.1f", this->get_name().c_str(), v, this->adc_reading_,
              this->last_level_);
+  } else {
+    ESP_LOGD(TAG, "'%s': still sampling..\tadc:.%.2f \taverage: %.2f \tcount: %d", this->get_object_id().c_str(), v,
+             (this->adc_reading_ / this->sample_count_), this->sample_count_);
   }
 }
 
@@ -110,9 +119,11 @@ void TankLevelSensor::update() {
   // Enable sensor
   float level = this->last_level_;
   float amt_left = level * this->tank_capacity_ / 100.0f;
-  ESP_LOGD(TAG, "%s Tank Level:%0f\tAmount Left: %.1f", this->get_name().c_str(), level, amt_left);
+  ESP_LOGD(TAG, "%s Tank Level:%0f\tAmount Left: %.1f\t adc voltage: %.2f", this->get_name().c_str(), level, amt_left,
+           this->adc_reading_);
   this->capacity_sensor_->publish_state(amt_left);
   this->level_sensor_->publish_state(level);
+  this->voltage_sensor_->publish_state(this->adc_reading_);
 }
 
 float TankLevelSensor::get_setup_priority() const { return setup_priority::AFTER_WIFI; }

@@ -2,53 +2,56 @@
 sensor:
   - platform: adc
     pin: 34
-    id: freshwater_adc
+    id: freshwater_tank_adc
     name: "Freshwater Tank ADC"
-    attenuation: 2.5db
-    update_interval: 5s
-    # filters:
-    # - sliding_window_moving_average:
-    #     window_size: 15
-    #     send_every: 5
+    attenuation: 11dB
+    update_interval: never
+    
 
   - platform: tank_level_sensor
     id: freshwater_level_sensor
     name: "Freshwater Tank Level"
-    adc_sensor: freshwater_adc
+    adc_sensor: freshwater_tank_adc
     voltage_high: 1.2
     voltage_low: 1.04
     invert: false
-    auto_range: false
+    auto_range: true
     tank_capacity: 25.0
     update_interval: 5s
     percent_full:
       id: sensor_percent_fresh
       name: "Freshwater Percent Left"
     amount_left:
-      id: sensor_amt_left
+      id: sensor_amt_left_fresh
       name: "Freshwater Remaining"
+    adc_voltage:
+      id: sensor_freshwater_voltage
+      name: "Freshwater voltage"
+
  
   - platform: adc
     pin: 35
-    id: graywater_adc
+    id: graywater_tank_adc
     name: "Graywater Tank ADC"
-    attenuation: 2.5db
-    update_interval: 5s
+    attenuation: 11dB
+    update_interval: never
 
   - platform: tank_level_sensor
     id: graywater_level_sensor
     name: "Graywater Tank Level"
-    adc_sensor: graywater_adc
+    adc_sensor: graywater_tank_adc
     tank_capacity: 20.0
     voltage_high: 1.2
-    voltage_low: 1
+    voltage_low: 1.10
     invert: false
-    auto_range: false
+    auto_range: true
     update_interval: 5s
     percent_full:
       id: sensor_percent_grey
       name: "Graywater Percent Full"
     amount_left:
       id: sensor_amt_left_grey
-      name: "Greywater Used"
- 
+      name: "Graywater Used"
+    adc_voltage:
+      id: sensor_graywater_voltage
+      name: "Graywater voltage"

@@ -8,6 +8,8 @@ from esphome.const import (
     ICON_WATER_PERCENT,
     STATE_CLASS_MEASUREMENT,
     UNIT_PERCENT,
+    DEVICE_CLASS_VOLTAGE,
+    UNIT_VOLT,
 )
 
 
@@ -18,10 +20,10 @@ CONF_LEVELS = "tank_levels"
 CONF_VOLTAGE_HIGH = "voltage_high"
 CONF_VOLTAGE_LOW = "voltage_low"
 CONF_AUTO_RANGE = "auto_range"
-CONF_VOLTAGE = "voltage"
 CONF_TANK_PERCENT_FULL = "percent_full"
 CONF_TANK_UNITS_LEFT = "amount_left"
 CONF_ADC_SENSOR = "adc_sensor"
+CONF_ADC_VOLTAGE = "adc_voltage"
 ICON_WAVES_ARROW_UP = "mdi:waves-arrow-up"
 UNIT_GALLON = "gal"
 UNIT_LITRE = "L"
@@ -46,7 +48,6 @@ tank_capacity_schema = sensor.sensor_schema(
     state_class=STATE_CLASS_MEASUREMENT,
 )
 
-
 # entry = {
 #     cv.Required(CONF_VOLTAGE): cv.float_,
 #     cv.Required(CONF_TANK_PERCENT_FULL): cv.float_,
@@ -69,6 +70,12 @@ CONFIG_SCHEMA = (
             cv.Optional(CONF_TANK_CAPACITY): cv.float_,
             cv.Optional(CONF_TANK_PERCENT_FULL): tank_level_schema,
             cv.Optional(CONF_TANK_UNITS_LEFT): tank_capacity_schema,
+            cv.Optional(CONF_ADC_VOLTAGE): sensor.sensor_schema(
+                unit_of_measurement=UNIT_VOLT,
+                accuracy_decimals=2,
+                device_class=DEVICE_CLASS_VOLTAGE,
+                state_class=STATE_CLASS_MEASUREMENT,
+            ),
         }
     )
     .extend(cv.polling_component_schema("60s"))
@@ -79,10 +86,17 @@ async def to_code(config):
     var = cg.new_Pvariable(config[CONF_ID])
 
     await cg.register_component(var, config)
+    await sensor.register_sensor(var, config)
+
     if CONF_ADC_SENSOR in config:
         conf = config[CONF_ADC_SENSOR]
         input_var = await cg.get_variable(conf)
         cg.add(var.set_adc(input_var))
+
+    if CONF_ADC_VOLTAGE in config:
+        conf = config[CONF_ADC_VOLTAGE]
+        sens = await sensor.new_sensor(conf)
+        cg.add(var.set_voltage_sensor(sens))
 
     conf = config[CONF_TANK_PERCENT_FULL]
     sens = await sensor.new_sensor(conf)

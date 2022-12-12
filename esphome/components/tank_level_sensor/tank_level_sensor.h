@@ -35,6 +35,7 @@ class TankLevelSensor : public sensor::Sensor, public PollingComponent {
   float get_setup_priority() const override;
   void update() override;
   void set_level_sensor(sensor::Sensor *level_sensor) { this->level_sensor_ = level_sensor; }
+  void set_voltage_sensor(sensor::Sensor *voltage_sensor) { this->voltage_sensor_ = voltage_sensor; }
   void set_capacity_sensor(sensor::Sensor *capacity_sensor) { this->capacity_sensor_ = capacity_sensor; }
   void set_adc(adc::ADCSensor *adc_sensor) { this->adc_sensor_ = adc_sensor; }
   // void add_level(float voltage, float percent_full);
@@ -62,6 +63,7 @@ class TankLevelSensor : public sensor::Sensor, public PollingComponent {
   // std::vector<TankLevel> levels_{};
   sensor::Sensor *level_sensor_;
   sensor::Sensor *capacity_sensor_;
+  sensor::Sensor *voltage_sensor_;
   adc::ADCSensor *adc_sensor_;
   // float margin_percent_;
   float tank_capacity_;

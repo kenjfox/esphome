@@ -31,6 +31,11 @@ logger:
 api:
 ota:
 
+globals:
+   - id: "dim_direction"
+     type: bool
+     restore_value: yes
+     initial_value: "true"
 
 binary_sensor:
   - platform: gpio
@@ -48,50 +53,36 @@ binary_sensor:
       - delayed_on: 10ms
     on_click: 
       min_length: 10ms
-      max_length: 350ms
+      max_length: 400ms
       then:
-      - if:
-          condition:
-            - light.is_off: ${device_id}
-          then:
-            - light.turn_on:
-                id: ${device_id}
-                brightness: .8
-          else:
-            - light.turn_off: ${device_id}
+        - light.toggle: ${device_id}
 
     on_press:
       then:
-        - if:
+        - delay: .5s
+        - while:
             condition:
-              light.is_off: ${device_id}
+              binary_sensor.is_on: ${button_id}
             then:
-              - delay: 0.5s
-              - light.turn_on: ${device_id}
-              - while:
+              - if:
                   condition:
-                    binary_sensor.is_on: ${button_id}
+                    lambda: |-
+                      auto val = id(${device_id}).remote_values.get_brightness();
+                      auto dir =  id(dim_direction);
+                      if( dir && val >= 1)
+                       id(dim_direction) = false;
+                      return id(dim_direction);
                   then:
                     - light.dim_relative:
                         id: ${device_id}
-                        relative_brightness: 2%
+                        relative_brightness: .5%
                         transition_length: 0s
-                    - delay: 0.25s
-                    
-            else:
-              - delay: 0.5s
-              - while:
-                  condition:
-                    and:
-                      - binary_sensor.is_on: ${button_id}
-                      - light.is_on: ${device_id}
-                  then:
+                  else:
                     - light.dim_relative:
                         id: ${device_id}
-                        relative_brightness: -5%
-                        transition_length: 0.1s
-                    - delay: 0.1s
-                    
+                        relative_brightness: -.5%
+                        transition_length: 0s
+              - delay: .02s
 
 light:
   - platform: rgbw
@@ -121,28 +112,28 @@ light:
 output:
   - platform: ledc
     pin: GPIO1 # default pin is 12
-    frequency: 29296Hz 
+    frequency: 19531Hz 
     id: pwm_r
-    min_power: .02
+    min_power: .011
     zero_means_zero: true
 
   - platform: ledc
     pin: GPIO2
-    frequency: 29296Hz 
+    frequency: 19531Hz 
     id: pwm_g
-    min_power: .02
+    min_power: .011
     zero_means_zero: true
 
   - platform: ledc
     pin: GPIO3 # default pin is 14
-    frequency: 29296Hz 
+    frequency: 19531Hz 
     id: pwm_b
-    min_power: .02
+    min_power: .011
     zero_means_zero: true
 
   - platform: ledc
     pin: GPIO4 #default pin is 4
-    frequency: 29296Hz 
+    frequency: 19531Hz 
     id: pwm_w
-    min_power: .02
+    min_power: .011
     zero_means_zero: true

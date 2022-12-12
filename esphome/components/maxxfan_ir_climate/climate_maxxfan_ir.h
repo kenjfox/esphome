@@ -46,7 +46,8 @@ class MaxxFanIr : public climate_ir::ClimateIR {
   void save_state_();
   void set_fanspeed(uint8_t);
   uint8_t get_fanspeed();
-
+  bool get_direction();
+  void set_direction(bool fwd);
   /// Transmit via IR the state of this climate controller.
 
   void transmit_state() override;
@@ -59,6 +60,7 @@ class MaxxFanIr : public climate_ir::ClimateIR {
   bool fahrenheit_ = true;
   string get_command_key();
   FanSpeed *fanspeed_component_;
+
   uint8_t fanspeed_{100};
   // void send_ir(MaxxFanMode mode, fan::FanDirection direction, uint8_t speed, uint8_t temp);
   void send_ir(const char *command_key);

@@ -27,8 +27,8 @@ esp32:
 #     version: latest
 
 wifi:
-  ssid:     foxstar
-  password: 12345678&
+  ssid:     vango-inside
+  password: $password
 
 
 logger:
@@ -45,11 +45,9 @@ remote_transmitter:
   carrier_duty_percent: 50%
   id: ir_rear_fan
 
-output:
-  - platform: template
-    id: maxxfan_speed_output
-    type: float
-    
+ 
+
+
   
 climate:
 - platform: maxxfan_ir_climate
@@ -60,6 +58,12 @@ climate:
   transmitter_id: ir_rear_fan
   use_fahrenheit: true
 
+# fan:
+# - platform: speed
+#   id: maxxfan_fan
+#   output: maxxfan_ir_climate_fanspeed
+#   direction_output: maxxfan_ir_climate_direction
+#   speed_count: 10
 
 
 web_server:

@@ -94,7 +94,14 @@ void MaxxFanIr::set_fanspeed(uint8_t speed) {
 
 uint8_t MaxxFanIr::get_fanspeed() { return (uint8_t) this->fanspeed_component_->state; }
 
-void MaxxFanIr::control(const ClimateCall &call) {
+void MaxxFanIr::set_direction(bool fwd) {
+  auto call = this->make_call();
+  call.set_preset(fwd ? PRESET_AIR_OUT : PRESET_AIR_IN);
+  call.perform();
+}
+bool MaxxFanIr::get_direction() { return (this->custom_preset == PRESET_AIR_OUT); }
+
+void MaxxFanIr::MaxxFanIr::control(const ClimateCall &call) {
   ESP_LOGD(TAG, "control...");
   // conditionally set available traits based on the mode...
   if (call.get_mode().has_value()) {

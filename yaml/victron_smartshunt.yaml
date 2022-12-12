@@ -17,6 +17,8 @@
  victron_smart_shunt:
   uart_id: uart0
 
+ 
+       
  sensor:
   - platform: victron_smart_shunt
     battery_voltage:
@@ -28,6 +30,7 @@
       name: "Battery Current"
       id: bc
       accuracy_decimals: ${accuracy}
+      device_class: current
 
     fw_version:
       name: "ShartShunt Firmware Version"
@@ -41,10 +44,15 @@
       name: "Instanteneous Power"
       id: instantaneous_power
       accuracy_decimals: ${accuracy}
+      device_class: power
+      unit_of_measurement: W
 
     time_to_go:
-      name: "Time to Full Charge"
+      name: "Time to Full Discharge"
       id: time_to_go
+      device_class: duration
+      unit_of_measurement: h
+    
 
     consumed_amp_hours:
       name: "Consumed Amp Hours"
@@ -69,6 +77,7 @@
         - multiply: 0.001
       unit_of_measurement: kWh
       accuracy_decimals: ${accuracy}
+      device_class: energy
 
     bmv_text:
       name: "Product"
@@ -77,6 +86,8 @@
     last_full_charge:
       name: "Time Since Last Full Charge"
       id: last_full_charge
+      device_class: duration
+      unit_of_measurement: min
 
     deepest_discharge:
       name: "Depth of Deepest Discharge"
@@ -97,10 +108,12 @@
         - multiply: 0.001
       unit_of_measurement: kWh
       accuracy_decimals: ${accuracy}
+      device_class: energy
 
     state_of_charge:
       id: state_of_charge
       name: "SoC"
+      device_class: battery
 
     alarm_reason:
       id: alarm_reason

@@ -493,8 +493,10 @@ void VictronSmartShuntComponent::handle_value_() {
       // Wh
       amount_of_charged_sensor_->publish_state(atoi(value_.c_str()));  // NOLINT(cert-err34-c)
   } else if (label_ == "TTG") {
-    if (time_to_go_sensor_ != nullptr)
-      time_to_go_sensor_->publish_state(atoi(value_.c_str()));  // NOLINT(cert-err34-c)
+    if (time_to_go_sensor_ != nullptr) {
+      float ttgval = atof(value_.c_str()) / 60.0;
+      time_to_go_sensor_->publish_state(ttgval);  // NOLINT(cert-err34-c)
+    }
   } else if (label_ == "SOC") {
     if (state_of_charge_sensor_ != nullptr)
       // promiles to %

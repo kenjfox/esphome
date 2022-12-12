@@ -1,3 +1,15 @@
+number:
+  - platform: template
+    id: tank_capacity
+    name: Tank Capacity
+    device_class: water
+    unit_of_measurement: "gal"
+    restore_value: true
+    max_value: 25
+    min_value: 0
+    initial_value: 25
+    step: .01
+    optimistic: true
 
 sensor:
 # water flow sensor  
@@ -13,14 +25,32 @@ sensor:
      - multiply: 0.000583431   # calibrated at sink ~ 450 pulses per litre
     unit_of_measurement: "GPM"  
     accuracy_decimals: 2
+    
     total:
       unit_of_measurement: "gal"
       name: "Total Water Used"
+      id: total_water_used
+      device_class: "water"
       accuracy_decimals: 2
       filters:
         - multiply: 0.000583431 # calibrated at sink
+      on_value:
+        then:
+          - lambda: |-
+              float v = 0;
+              if ( id(tank_capacity).state) 
+                v= id(tank_capacity).state - id(total_water_used).state;
+              id(remaining_water_calc).publish_state(v);
+     
     disable_pulse_count:
       name: "Water Flow Totaling Disabled"
+
+  - platform: template
+    name: "Remaining Water (Calculated)"
+    id: remaining_water_calc     
+    
+
+
 button:
   - platform: template
     id: btn_reset_water_flow

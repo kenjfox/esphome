@@ -63,7 +63,8 @@ PulseCounterStorageBase *get_storage(bool hw_pcnt = false);
 class PulseCounterSensor : public sensor::Sensor, public PollingComponent {
  public:
   explicit PulseCounterSensor(bool hw_pcnt = false) : storage_(*get_storage(hw_pcnt)) {}
-
+  void reset_total();
+  void pause_total(bool pause);
   bool is_total_paused() { return pause_total_; }
   void set_pin(InternalGPIOPin *pin) { pin_ = pin; }
   void set_rising_edge_mode(PulseCounterCountMode mode) { storage_.rising_edge_mode = mode; }

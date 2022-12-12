@@ -72,7 +72,7 @@ CONFIG_SCHEMA = (
             cv.Optional(CONF_ROLL): tilt_schema,
         }
     )
-    .extend(cv.polling_component_schema("100ms"))
+    .extend(cv.polling_component_schema("1000ms"))
     .extend(i2c.i2c_device_schema(0x68))
 )
 

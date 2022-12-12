@@ -14,7 +14,7 @@ switch:
       mode:
         output: true
       inverted: false
-
+    restore_mode: ALWAYS_OFF
   - platform: gpio
     name: "Inverter"
     id: "sw_inverter"
@@ -50,6 +50,8 @@ switch:
       mode:
         output: true
       inverted: false
+    restore_mode: ALWAYS_OFF
+
   - platform: gpio
     name: "Audio"
     id: sw_audio
@@ -727,8 +729,9 @@ binary_sensor:
         input: true
         pullup: true
       inverted: true
+sensor:
 
-  - platform: gpio
+  - platform: duty_cycle
     name: "Cab Light On"
     id: input_cab_light
     pin: 

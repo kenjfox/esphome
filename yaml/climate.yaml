@@ -1,4 +1,4 @@
-# Example dual-point configuration entry
+# fans 
 
 fan:
   - platform: speed
@@ -15,27 +15,3 @@ fan:
     output: highside_switch_1
     
 
-climate:
-  - platform: thermostat
-    name: "Thermostat Climate Controller"
-    sensor: temp_garage
-    default_target_temperature_low: 65 °F
-    default_target_temperature_high: 80 °F
-    min_cooling_off_time: 300s
-    min_cooling_run_time: 300s
-    min_heating_off_time: 300s
-    min_heating_run_time: 300s
-    min_idle_time: 30s
-    cool_action:
-      - fan.turn_on:
-          id: rear_heater_fan
-          speed: 20
-    heat_action:
-      - fan.turn_on:
-          id: rear_heater_fan
-          speed: 20
-      - switch.turn_on: sw_valve_rear_heater
-    idle_action:
-      - fan.turn_off:
-          id: rear_heater_fan
-      - switch.turn_off: sw_valve_rear_heater 

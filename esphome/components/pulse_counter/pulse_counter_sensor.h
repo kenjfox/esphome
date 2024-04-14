@@ -29,6 +29,9 @@ using pulse_counter_t = int32_t;
 struct PulseCounterStorageBase {
   virtual bool pulse_counter_setup(InternalGPIOPin *pin) = 0;
   virtual pulse_counter_t read_raw_value() = 0;
+struct PulseCounterStorageBase {
+  virtual bool pulse_counter_setup(InternalGPIOPin *pin) = 0;
+  virtual pulse_counter_t read_raw_value() = 0;
 
   InternalGPIOPin *pin;
   PulseCounterCountMode rising_edge_mode{PULSE_COUNTER_INCREMENT};
@@ -36,6 +39,29 @@ struct PulseCounterStorageBase {
   uint32_t filter_us{0};
   pulse_counter_t last_value{0};
 };
+
+struct BasicPulseCounterStorage : public PulseCounterStorageBase {
+  static void gpio_intr(BasicPulseCounterStorage *arg);
+
+  bool pulse_counter_setup(InternalGPIOPin *pin) override;
+  pulse_counter_t read_raw_value() override;
+
+  volatile pulse_counter_t counter{0};
+  volatile uint32_t last_pulse{0};
+
+  ISRInternalGPIOPin isr_pin;
+};
+
+#ifdef HAS_PCNT
+struct HwPulseCounterStorage : public PulseCounterStorageBase {
+  bool pulse_counter_setup(InternalGPIOPin *pin) override;
+  pulse_counter_t read_raw_value() override;
+
+  pcnt_unit_t pcnt_unit;
+};
+#endif
+
+PulseCounterStorageBase *get_storage(bool hw_pcnt = false);
 
 struct BasicPulseCounterStorage : public PulseCounterStorageBase {
   static void gpio_intr(BasicPulseCounterStorage *arg);

@@ -1,17 +1,19 @@
 import esphome.codegen as cg
 import esphome.config_validation as cv
-from esphome import automation, pins
+from esphome import automation, automation, pins
 from esphome.components import sensor
 from esphome.components import binary_sensor
 from esphome.const import (
     CONF_COUNT_MODE,
     CONF_FALLING_EDGE,
     CONF_ID,
+    CONF_ID,
     CONF_INTERNAL_FILTER,
     CONF_PIN,
     CONF_RISING_EDGE,
     CONF_NUMBER,
     CONF_TOTAL,
+    CONF_VALUE,
     CONF_VALUE,
     ICON_PULSE,
     STATE_CLASS_MEASUREMENT,
@@ -121,12 +123,13 @@ CONFIG_SCHEMA = cv.All(
         },
     )
     .extend(cv.polling_component_schema("60s")),
+    validate_internal_filter,,
     validate_internal_filter,
 )
 
 
 async def to_code(config):
-    var = await sensor.new_sensor(config, config.get(CONF_USE_PCNT))
+    var = await sensor.new_sensor(config, config.get(CONF_USE_PCNT), config.get(CONF_USE_PCNT))
     await cg.register_component(var, config)
 
     pin = await cg.gpio_pin_expression(config[CONF_PIN])

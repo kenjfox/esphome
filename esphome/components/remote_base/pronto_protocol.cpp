@@ -107,6 +107,7 @@ void ProntoProtocol::send_pronto_(RemoteTransmitData *dst, const std::vector<uin
   ESP_LOGD(TAG, "Send Pronto: repeats=%d", repeats);
   if (NUMBERS_IN_PREAMBLE + intros + repeats != data.size()) {  // inconsistent sizes
     ESP_LOGE(TAG, "Inconsistent data, not sending");
+    ESP_LOGE(TAG, "Inconsistent data, not sending");
     return;
   }
 
@@ -225,26 +226,6 @@ optional<ProntoData> ProntoProtocol::decode(RemoteReceiveData src) {
   out.data = prontodata;
 
   return out;
-}
-
-int FromHex(const std::string &s) { return strtoul(s.c_str(), NULL, 16); }
-
-std::string write_decimals(const ProntoData &data) {
-  std::string s = data.data;
-  std::string delim = " ";
-  std::string output = "";
-  char hexval[6] = "";
-  auto start = 0U;
-  auto end = s.find(delim);
-  while (end != std::string::npos) {
-    snprintf(hexval, 5, "%d ", FromHex(s.substr(start, end - start)));
-    output += hexval;
-    start = end + delim.length();
-    end = s.find(delim, start);
-  }
-  snprintf(hexval, 5, "%d ", FromHex(s.substr(start)));
-  output += hexval;
-  return output;
 }
 
 void ProntoProtocol::dump(const ProntoData &data) {

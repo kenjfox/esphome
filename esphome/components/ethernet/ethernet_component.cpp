@@ -5,6 +5,9 @@
 
 #ifdef USE_ESP32_FRAMEWORK_ARDUINO
 
+#include <eth_phy/phy_lan8720.h>
+#include <eth_phy/phy_ip101.h>
+#include <eth_phy/phy_tlk110.h>
 #include <lwip/dns.h>
 #include "esp_event.h"
 
@@ -58,19 +61,15 @@ void EthernetComponent::setup() {
   esp_eth_phy_t *phy;
   switch (this->type_) {
     case ETHERNET_TYPE_LAN8720: {
-      phy = esp_eth_phy_new_lan87xx(&phy_config);
+      memcpy(&this->eth_config_, &phy_lan8720_default_ethernet_config, sizeof(eth_config_t));
       break;
     }
-    case ETHERNET_TYPE_RTL8201: {
-      phy = esp_eth_phy_new_rtl8201(&phy_config);
-      break;
-    }
-    case ETHERNET_TYPE_DP83848: {
-      phy = esp_eth_phy_new_dp83848(&phy_config);
+    case ETHERNET_TYPE_TLK110: {
+      memcpy(&this->eth_config_, &phy_tlk110_default_ethernet_config, sizeof(eth_config_t));
       break;
     }
     case ETHERNET_TYPE_IP101: {
-      phy = esp_eth_phy_new_ip101(&phy_config);
+      memcpy(&this->eth_config_, &phy_ip101_default_ethernet_config, sizeof(eth_config_t));
       break;
     }
     default: {
@@ -101,6 +100,14 @@ void EthernetComponent::setup() {
     this->orig_power_control_fun_ = phy->pwrctl;
     phy->pwrctl = EthernetComponent::eth_phy_power_control;
   }
+
+  tcpipInit();
+
+  esp_err_t err;
+  err = esp_eth_init(&this->eth_config_);
+  ESPHL_ERROR_CHECK(err, "ETH init error");
+  err = esp_eth_enable();
+  ESPHL_ERROR_CHECK(err, "ETH enable error");
 }
 
 void EthernetComponent::loop() {
@@ -150,12 +157,8 @@ void EthernetComponent::dump_config() {
       eth_type = "LAN8720";
       break;
 
-    case ETHERNET_TYPE_RTL8201:
-      eth_type = "RTL8201";
-      break;
-
-    case ETHERNET_TYPE_DP83848:
-      eth_type = "DP83848";
+    case ETHERNET_TYPE_TLK110:
+      eth_type = "TLK110";
       break;
 
     case ETHERNET_TYPE_IP101:
@@ -277,7 +280,13 @@ void EthernetComponent::start_connect_() {
   this->connect_begin_ = millis();
   this->status_set_warning();
 }
-esp_err_t EthernetComponent::eth_phy_power_control(esp_eth_phy_t *phy, bool enable) {
+
+void EthernetComponent::eth_phy_config_gpio() {
+  phy_rmii_configure_data_interface_pins();
+  phy_rmii_smi_configure_pins(global_eth_component->mdc_pin_, global_eth_component->mdio_pin_);
+}
+
+void EthernetComponent::eth_phy_power_enable(bool enable) {
   global_eth_component->power_pin_->digital_write(enable);
   // power up takes some time, datasheet says max 300µs
   delay(1);

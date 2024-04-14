@@ -2,7 +2,7 @@ substitutions:
   name: "maxxfan"
   lower_devicename: $name
   devicename: "maxxfan"
-  config_version: "v2024.04.12.001"
+  config_version: "v2022.07.06.001"
   # wifi_fast_connect: "false"
   # wifi_reboot_timeout: 0s
   accuracy: "2"
@@ -40,10 +40,17 @@ api:
 ota:
   password: $password
 
+remote_transmitter:
+  pin: 19
+  carrier_duty_percent: 50%
+  id: ir_rear_fan
+
+ 
+
 
   
 climate:
-- platform: maxxfan_climate
+- platform: maxxfan_ir_climate
   id: "maxxfan_rear"
   name: "MaxxFan"
   supports_cool: true

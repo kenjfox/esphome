@@ -1,13 +1,13 @@
 substitutions:
-  name: "maxxfan"
+  name: "shroomonitor"
   lower_devicename: $name
-  devicename: "maxxfan"
-  config_version: "v2024.04.12.001"
+  devicename: "shroomanager"
+  config_version: "v2024.12.12.001"
   # wifi_fast_connect: "false"
   # wifi_reboot_timeout: 0s
   accuracy: "2"
-  password: "govango!"
-  device_verbose_name: "MaxxFan"
+  password: "govinego!"
+  device_verbose_name: "Shroom Manager"
 
 esphome:
   name: $name
@@ -27,7 +27,7 @@ esp32:
 #     version: latest
 
 wifi:
-  ssid:     vango-inside
+  ssid:     foxstar
   password: $password
 
 
@@ -40,24 +40,12 @@ api:
 ota:
   password: $password
 
-
-  
-climate:
-- platform: maxxfan_climate
-  id: "maxxfan_rear"
-  name: "MaxxFan"
-  supports_cool: true
-  supports_heat: false
-  transmitter_id: ir_rear_fan
-  use_fahrenheit: true
-
-# fan:
-# - platform: speed
-#   id: maxxfan_fan
-#   output: maxxfan_ir_climate_fanspeed
-#   direction_output: maxxfan_ir_climate_direction
-#   speed_count: 10
-
+i2c:
+   - id: bus_a
+     sda: 21
+     scl: 22
+     scan: true
+     frequency: 50kHz
 
 web_server:
   js_url: ""
@@ -66,4 +54,16 @@ web_server:
   ota: false
   version: 2
 
-
+sensor:
+  - platform: bme280
+    i2c_id: bus_a
+    temperature:
+      name: "BME280 Temperature"
+      id: temp_inside
+      oversampling: 16x
+    pressure:
+      name: "BME280 Pressure"
+    humidity:
+      name: "BME280 Humidity"
+    address: 0x76
+    update_interval: 1s 

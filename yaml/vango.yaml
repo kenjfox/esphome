@@ -52,8 +52,8 @@ ota:
 
 i2c:
    - id: bus_a
-     sda: 21
-     scl: 22
+     sda: 26
+     scl: 27
      scan: true
      frequency: 50kHz
 

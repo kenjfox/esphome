@@ -1,8 +1,4 @@
 ---
-ignore: |
-  venv/
-
----
 extends: default
 
 ignore-from-file: .gitignore
@@ -20,4 +16,3 @@ rules:
     indent-sequences: true
     check-multi-line-strings: false
   line-length: disable
-  truthy: disable

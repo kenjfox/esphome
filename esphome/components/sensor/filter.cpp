@@ -1,8 +1,8 @@
 #include "filter.h"
+#include <cmath>
 #include "esphome/core/hal.h"
 #include "esphome/core/log.h"
 #include "sensor.h"
-#include <cmath>
 
 namespace esphome {
 namespace sensor {
@@ -72,6 +72,19 @@ optional<float> MedianFilter::new_value(float value) {
     return median;
   }
   return {};
+}
+
+// SkipInitialFilter
+SkipInitialFilter::SkipInitialFilter(size_t num_to_ignore) : num_to_ignore_(num_to_ignore) {}
+optional<float> SkipInitialFilter::new_value(float value) {
+  if (num_to_ignore_ > 0) {
+    num_to_ignore_--;
+    ESP_LOGV(TAG, "SkipInitialFilter(%p)::new_value(%f) SKIPPING, %u left", this, value, num_to_ignore_);
+    return {};
+  }
+
+  ESP_LOGV(TAG, "SkipInitialFilter(%p)::new_value(%f) SENDING", this, value);
+  return value;
 }
 
 // QuantileFilter
@@ -239,7 +252,9 @@ ThrottleAverageFilter::ThrottleAverageFilter(uint32_t time_period) : time_period
 
 optional<float> ThrottleAverageFilter::new_value(float value) {
   ESP_LOGVV(TAG, "ThrottleAverageFilter(%p)::new_value(value=%f)", this, value);
-  if (!std::isnan(value)) {
+  if (std::isnan(value)) {
+    this->have_nan_ = true;
+  } else {
     this->sum_ += value;
     this->n_++;
   }
@@ -249,12 +264,14 @@ void ThrottleAverageFilter::setup() {
   this->set_interval("throttle_average", this->time_period_, [this]() {
     ESP_LOGVV(TAG, "ThrottleAverageFilter(%p)::interval(sum=%f, n=%i)", this, this->sum_, this->n_);
     if (this->n_ == 0) {
-      this->output(NAN);
+      if (this->have_nan_)
+        this->output(NAN);
     } else {
       this->output(this->sum_ / this->n_);
       this->sum_ = 0.0f;
       this->n_ = 0;
     }
+    this->have_nan_ = false;
   });
 }
 float ThrottleAverageFilter::get_setup_priority() const { return setup_priority::HARDWARE; }
@@ -315,19 +332,23 @@ optional<float> ThrottleFilter::new_value(float value) {
 }
 
 // DeltaFilter
-DeltaFilter::DeltaFilter(float min_delta) : min_delta_(min_delta), last_value_(NAN) {}
+DeltaFilter::DeltaFilter(float delta, bool percentage_mode)
+    : delta_(delta), current_delta_(delta), percentage_mode_(percentage_mode), last_value_(NAN) {}
 optional<float> DeltaFilter::new_value(float value) {
   if (std::isnan(value)) {
     if (std::isnan(this->last_value_)) {
       return {};
     } else {
+      if (this->percentage_mode_) {
+        this->current_delta_ = fabsf(value * this->delta_);
+      }
       return this->last_value_ = value;
     }
   }
-  if (std::isnan(this->last_value_)) {
-    return this->last_value_ = value;
-  }
-  if (fabsf(value - this->last_value_) >= this->min_delta_) {
+  if (std::isnan(this->last_value_) || fabsf(value - this->last_value_) >= this->current_delta_) {
+    if (this->percentage_mode_) {
+      this->current_delta_ = fabsf(value * this->delta_);
+    }
     return this->last_value_ = value;
   }
   return {};
@@ -355,6 +376,15 @@ void OrFilter::initialize(Sensor *parent, Filter *next) {
   }
   this->phi_.initialize(parent, nullptr);
 }
+
+// TimeoutFilter
+optional<float> TimeoutFilter::new_value(float value) {
+  this->set_timeout("timeout", this->time_period_, [this]() { this->output(this->value_); });
+  return value;
+}
+
+TimeoutFilter::TimeoutFilter(uint32_t time_period, float new_value) : time_period_(time_period), value_(new_value) {}
+float TimeoutFilter::get_setup_priority() const { return setup_priority::HARDWARE; }
 
 // DebounceFilter
 optional<float> DebounceFilter::new_value(float value) {
@@ -388,8 +418,13 @@ void HeartbeatFilter::setup() {
 }
 float HeartbeatFilter::get_setup_priority() const { return setup_priority::HARDWARE; }
 
-optional<float> CalibrateLinearFilter::new_value(float value) { return value * this->slope_ + this->bias_; }
-CalibrateLinearFilter::CalibrateLinearFilter(float slope, float bias) : slope_(slope), bias_(bias) {}
+optional<float> CalibrateLinearFilter::new_value(float value) {
+  for (std::array<float, 3> f : this->linear_functions_) {
+    if (!std::isfinite(f[2]) || value < f[2])
+      return (value * f[0]) + f[1];
+  }
+  return NAN;
+}
 
 optional<float> CalibratePolynomialFilter::new_value(float value) {
   float res = 0.0f;
@@ -399,6 +434,38 @@ optional<float> CalibratePolynomialFilter::new_value(float value) {
     x *= value;
   }
   return res;
+}
+
+ClampFilter::ClampFilter(float min, float max, bool ignore_out_of_range)
+    : min_(min), max_(max), ignore_out_of_range_(ignore_out_of_range) {}
+optional<float> ClampFilter::new_value(float value) {
+  if (std::isfinite(value)) {
+    if (std::isfinite(this->min_) && value < this->min_) {
+      if (this->ignore_out_of_range_) {
+        return {};
+      } else {
+        return this->min_;
+      }
+    }
+
+    if (std::isfinite(this->max_) && value > this->max_) {
+      if (this->ignore_out_of_range_) {
+        return {};
+      } else {
+        return this->max_;
+      }
+    }
+  }
+  return value;
+}
+
+RoundFilter::RoundFilter(uint8_t precision) : precision_(precision) {}
+optional<float> RoundFilter::new_value(float value) {
+  if (std::isfinite(value)) {
+    float accuracy_mult = powf(10.0f, this->precision_);
+    return roundf(accuracy_mult * value) / accuracy_mult;
+  }
+  return value;
 }
 
 }  // namespace sensor

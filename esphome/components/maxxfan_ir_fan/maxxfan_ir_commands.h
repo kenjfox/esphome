@@ -4,7 +4,7 @@ using namespace std;
 namespace esphome {
 namespace maxxfan_ir_fan {
 
-static map<const string, const char *> COMMANDS = {
+static std::map<const string, const char *> COMMANDS = {
     {"MAN_OUT_10",
      "0000 006D 0029 0000 0041 001F 0021 003E 0021 001E 0021 003E 0021 001F 0021 001E 0041 001F 0021 005E 0100 005F "
      "0021 00DE 0021 003E 00E1 001F 0021 003E 0021 00BE 0021 005E 00C1 001E 0041 003E 0021 009E 0021 007E 00A1 001E "

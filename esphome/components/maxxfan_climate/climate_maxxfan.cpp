@@ -158,17 +158,13 @@ void MaxxFan::transmit_state() {
 
   switch (this->mode) {
     case ClimateMode::CLIMATE_MODE_OFF:
-      send_ir("OFF");
-      if (this->custom_preset.value() == PRESET_VENT_ONLY)
-        send_ir("OFF_OPEN");
+     
       break;
     case ClimateMode::CLIMATE_MODE_COOL:
-      key += to_string(target_temp_F);
-      send_ir(key.c_str());
+     
       break;
     case ClimateMode::CLIMATE_MODE_FAN_ONLY:
-      key += ltrim(this->custom_fan_mode.value());
-      send_ir(key.c_str());
+      
       break;
     default:
       break;

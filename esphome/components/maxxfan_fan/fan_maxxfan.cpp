@@ -5,15 +5,13 @@ namespace esphome {
 namespace maxxfan_fan {
 static const char *const TAG = "maxxfan";
 
-MaxxFan::MaxxFan() {
-  // this->transmitter_ = new remote_transmitter::RemoteTransmitterComponent(pin);
-  // this->transmitter_->set_carrier_duty_percent(carrier_duty_percent);
-}
+
 
 void MaxxFan::setup() {
   ESP_LOGD(TAG, "setup...");
   auto restore = this->restore_state_();
   ESP_LOGD(TAG, "got restore_state()");
+
   if (restore.has_value()) {
     ESP_LOGD(TAG, "restore does have value");
     restore->apply(*this);
@@ -23,8 +21,29 @@ void MaxxFan::setup() {
 }
 
 
-void MaxxFan::set_cover_state(CoverState state) {
-  this->cover_state_ = state;
+
+void MaxxFan::set_cover_output(bool open) {
+  if (open) {
+    this->pin_cover_a_->set_level(1.0f);
+    this->pin_cover_b_->set_level(0.0f);
+  } else {
+    this->pin_cover_a_->set_level(0.0f);
+    this->pin_cover_b_->set_level(1.0f);  
+  }
+}
+
+void MaxxFan::set_cover_state() {
+  auto mode=this->preset_mode;
+  if (mode == PRESET_OPEN || mode == PRESET_OFF_OPEN) {
+      this->set_cover_output(true);
+      this->cover_state_ = OPEN;
+
+  }
+  else if (mode == PRESET_CLOSED || mode == PRESET_OFF) {
+      this->set_cover_output(false);
+      this->cover_state_ = CLOSED;
+  }
+     
   this->write_state_();
 }
 
@@ -37,8 +56,7 @@ void MaxxFan::dump_config() {
 fan::FanTraits MaxxFan::get_traits() {
   ESP_LOGD(TAG, "get traits");
   auto traits = fan::FanTraits(false, true, true, this->speed_count_);
-  traits.set_supported_custom_presets({PRESET_VENT_ONLY, PRESET_AIR_IN, PRESET_AIR_OUT});
- HBridgeFan::Component::
+  traits.set_supported_preset_modes({PRESET_OFF, PRESET_OFF_OPEN, PRESET_OPEN, PRESET_CLOSED});
  
 }
 
@@ -51,7 +69,9 @@ void MaxxFan::control(const fan::FanCall &call) {
 
   if (call.get_direction().has_value())
     this->direction = *call.get_direction();
-  if(call.)
+  
+  this->preset_mode = call.get_preset_mode();
+  
   this->write_state_();
 }
 
@@ -60,8 +80,15 @@ void MaxxFan::control(const fan::FanCall &call) {
 
 
 void MaxxFan::write_state_() {
-  const char *MAXXFAN_OFF = "OFF";
   
+  if (speed == 0.0f) 
+  {
+    if(this->preset_mode != PRESET_OFF_OPEN)
+    {
+      this->preset_mode = PRESET_OFF;
+    }
+  }
+   this->set_cover_state();
   this->publish_state();
 }
 }  // namespace maxxfan_fan

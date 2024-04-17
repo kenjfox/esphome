@@ -35,7 +35,7 @@ class MaxxFan: public climate::Climate {
   const char *PRESET_AIR_OUT = "AIR OUT";
 
   MaxxFan();
-  void MaxxFan::setup() ;
+  void setup() ;
   void set_fahrenheit(bool set);
   void set_fanspeed_component(FanSpeed *num);
   void set_homeassistant_sensor(homeassistant::HomeassistantSensor *sensor);
@@ -45,6 +45,7 @@ class MaxxFan: public climate::Climate {
  protected:
   void control(const climate::ClimateCall &call) override;
   ClimateTraits traits() override;
+  void transmit_state();
   void save_state_();
   void set_fanspeed(uint8_t);
   uint8_t get_fanspeed();

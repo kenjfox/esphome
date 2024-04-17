@@ -130,29 +130,6 @@ void EthernetComponent::setup() {
 #endif
 #endif
 
-  esp_err_t err;
-  err = esp_netif_init();
-  ESPHL_ERROR_CHECK(err, "ETH netif init error");
-  err = esp_event_loop_create_default();
-  ESPHL_ERROR_CHECK(err, "ETH event loop error");
-
-  esp_netif_config_t cfg = ESP_NETIF_DEFAULT_ETH();
-  this->eth_netif_ = esp_netif_new(&cfg);
-
-  // Init MAC and PHY configs to default
-  eth_mac_config_t mac_config = ETH_MAC_DEFAULT_CONFIG();
-  eth_phy_config_t phy_config = ETH_PHY_DEFAULT_CONFIG();
-
-  phy_config.phy_addr = this->phy_addr_;
-
-  mac_config.smi_mdc_gpio_num = this->mdc_pin_;
-  mac_config.smi_mdio_gpio_num = this->mdio_pin_;
-  mac_config.clock_config.rmii.clock_mode = this->clk_mode_ == EMAC_CLK_IN_GPIO ? EMAC_CLK_EXT_IN : EMAC_CLK_OUT;
-  mac_config.clock_config.rmii.clock_gpio = this->clk_mode_;
-
-  esp_eth_mac_t *mac = esp_eth_mac_new_esp32(&mac_config);
-
-  esp_eth_phy_t *phy;
   switch (this->type_) {
 #if CONFIG_ETH_USE_ESP32_EMAC
     case ETHERNET_TYPE_LAN8720: {

@@ -11,10 +11,10 @@ substitutions:
 
 esphome:
   name: $name
-    
+  
 esp32:
-  board: esp32-s2-saola-1
-  variant: esp32S2
+  board: esp32dev
+  variant: esp32
   framework:
     type: esp-idf
     version: recommended
@@ -33,18 +33,38 @@ api:
 ota:
   password: $password
 
-remote_transmitter:
-  pin: 41
-  carrier_duty_percent: 50%
-  id: ir_rear_fan
+output:
+  - platform: ledc
+    frequency: "10000Hz"
+    min_power: 0
+    pin: 16
+    id: hbridge_1
+    inverted: true
+    zero_means_zero: true
+  - platform: ledc
+    frequency: "10000Hz"
+    min_power: 0
+    pin: 17
+    id: hbridge_2
+    inverted: true
+    zero_means_zero: true
+   
   
-climate:
-- platform: maxxfan_ir
-  name: "Rear Fan"
-  supports_cool: true
-  supports_heat: false
-  transmitter_id: ir_rear_fan
-  use_fahrenheit: true
+
+
+fan:
+- platform: hbridge
+  name: "MaxxFan"
+
+  id: $devicename
+  pin_a: hbridge_1
+  pin_b: hbridge_2
+  speed_count: 100
+
+ # pin_cover_a: GPIO34
+  # pin_cover_b: GPIO35
+  
+  # use_fahrenheit: true
   
     
 

@@ -21,9 +21,13 @@ struct MaxxFanRestoreState : fan::FanRestoreState {
   CoverState cover_state;
 };
 
-class MaxxFan : public hbridge::HBridgeFan, public Component {
+class MaxxFan : public hbridge::HBridgeFan{
  public:
   MaxxFan(int speed_count, hbridge::DecayMode decay_mode) : HBridgeFan(speed_count,decay_mode) {}
+
+
+  void set_pin_cover_a(output::FloatOutput *pin_a) { pin_cover_a_ = pin_a; }
+  void set_pin_cover_b(output::FloatOutput *pin_b) { pin_cover_b_ = pin_b; }
 
   void setup() override;
   void dump_config() override;
@@ -31,24 +35,29 @@ class MaxxFan : public hbridge::HBridgeFan, public Component {
   float get_setup_priority() const override { return setup_priority::DATA; }
 
     
-  void set_cover_state(CoverState state);
+  
+  
   fan::FanTraits get_traits() override;
   
   CoverState get_cover_state() const { return this->cover_state_; }
   
-  const char *PRESET_VENT_ONLY = "VENT ONLY";
-  const char *PRESET_AIR_IN = "AIR IN";
-  const char *PRESET_AIR_OUT = "AIR OUT";
+  const std::string PRESET_OFF_OPEN = "OFF_OPEN";
+  const std::string PRESET_OPEN = "OPEN";
+  const std::string PRESET_CLOSED = "CLOSED";
+  const  std::string PRESET_OFF = "OFF";
 
  protected:
-  std::string custom_preset_before_{"AIR IN"};
+  void set_cover_state();
+  std::string custom_preset_before_{"OPEN"};
   CoverState cover_state_;
-  output::FloatOutput *pin_lid_a;
-  output::FloatOutput *pin_lid_b;
+  output::FloatOutput *pin_cover_a_;
+  output::FloatOutput *pin_cover_b_;
+
   uint8_t speed_count_{100};
   void write_state_();
   void control(const fan::FanCall &call) override;
-  fan::FanCall set_cover_state(bool open);
+  
+  void set_cover_output(bool open);
 };
 
 }  // namespace maxxfan_ir_fan

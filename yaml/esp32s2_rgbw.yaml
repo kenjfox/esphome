@@ -59,7 +59,7 @@ binary_sensor:
 
     on_press:
       then:
-        - delay: .5s
+        - delay: .25s
         - while:
             condition:
               binary_sensor.is_on: ${button_id}

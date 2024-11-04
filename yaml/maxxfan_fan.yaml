@@ -4,7 +4,7 @@ substitutions:
   devicename: "maxxfan"
   config_version: "v2022.07.06.001"
   # wifi_fast_connect: "false"
-  # wifi_reboot_timeout: 0s
+  wifi_reboot_timeout: 60s
   accuracy: "2"
   password: "govango!"
   device_verbose_name: "MaxxFan"
@@ -20,15 +20,16 @@ esp32:
     version: recommended
 
 wifi:
-  ssid:     foxstar
-  password: 12345678&
+  ssid:     vango-inside
+  password: $password
 
 
 logger:
   level: VERBOSE
 
 api:
- password: $password
+  encryption: 
+    key: 5WNEEUZ7KqqdKXQRU8CoUeHMgO0euq66s1HnUAoDzog=
 
 ota:
   password: $password

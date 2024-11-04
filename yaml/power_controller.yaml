@@ -1,0 +1,86 @@
+substitutions:
+  name: "power-controller"
+  lower_devicename: $name
+  devicename: "power-controller"
+  config_version: "v2024.06.27.001"
+  # wifi_fast_connect: "false"
+  # wifi_reboot_timeout: 0s
+  accuracy: "2"
+  password: "govango!"
+  device_verbose_name: "Power Controller"
+
+esphome:
+  name: $name
+    
+esp32:
+  board: esp32dev
+  variant: esp32
+  framework:
+    type: arduino
+    version: recommended
+
+wifi:
+  ssid:     vango-inside
+  password: $password
+  reboot_timeout: 60s
+  output_power: 15.0 dB
+  
+logger:
+  level: DEBUG
+
+api:
+ password: $password
+
+ota:
+  password: $password
+
+i2c:
+   - id: bus_a
+     sda: 26
+     scl: 27
+     scan: true
+    
+switch:
+  - platform: gpio
+    name: "Relay 1"
+    pin: 32
+    id: switch_1
+    icon: "mdi:power-socket"
+    internal: false
+    restore_mode: RESTORE_DEFAULT_OFF
+  - platform: gpio
+    name: "Relay 2"
+    id: switch_2
+    pin: 33
+    icon: "mdi:power-socket"
+    internal: false
+    restore_mode: RESTORE_DEFAULT_OFF
+    inverted: true
+  - platform: gpio
+    name: "Relay 3"
+    id: switch_3
+    pin: 25
+    icon: "mdi:power-socket"
+    internal: false
+    restore_mode: RESTORE_DEFAULT_OFF
+  - platform: gpio
+    name: "Relay 4"
+    id: switch_4
+    pin: 14
+    icon: "mdi:power-socket"
+    internal: false
+    restore_mode: RESTORE_DEFAULT_OFF
+ads1115:
+  - address: 0x48
+    continuous_mode: false
+sensor:
+  - platform: ads1115
+    multiplexer: 'A0_GND'
+    gain: 2.048
+    name: "Voltage Sensor"
+    id: volt_input_ign
+    update_interval: 1s
+    accuracy_decimals: 2
+    filters:
+      - multiply: 42.74
+    

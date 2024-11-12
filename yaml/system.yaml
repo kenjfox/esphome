@@ -4,9 +4,9 @@ wifi:
   password: "govango!" # $password
   fast_connect: on
   power_save_mode: none
+  reboot_timeout: 60s
   # Enable fallback hotspot (captive portal) in case wifi connection fails
-  ap:
-    ssid: "vango hardware hotspot"
+  
 
 # Example configuration entry
 debug:

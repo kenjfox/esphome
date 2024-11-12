@@ -43,11 +43,10 @@ output:
     pin: 22
     id: hbr_speed
     zero_means_zero : true
-    
   - platform: gpio
     pin: 23
     id: fan_direction
-    
+  
   
 
   - platform: template
@@ -99,6 +98,13 @@ switch:
     on_turn_on:
     - delay: 6.5s
     - switch.turn_off: cover_switch_open
+  
+  - platform: output
+    id: fan_intake
+    name: "Fan Intake"
+    output: fan_direction
+    restore_mode: DISABLED
+
 globals:
   - type: bool
     id: cover_open

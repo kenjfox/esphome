@@ -1,13 +1,6 @@
 # fans 
 
-fan:
-  - platform: speed
-    id: rear_heater_fan
-    name: "Rear Heater Fan"
-    restore_mode: RESTORE_DEFAULT_OFF
-    output: hbridge_1
-    speed_count: 100
-   
+fan:   
   - platform: binary
     id: shower_fan
     name: "Shower Fan"

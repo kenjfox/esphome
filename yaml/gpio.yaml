@@ -67,43 +67,7 @@ switch:
     id: sw_water_pump
     output: sx_01
       
-
-  - platform: gpio
-    name: "Valve Water Heater"
-    id: sw_valve_water_heater
-    pin: 32
-
-  - platform: gpio
-    name: "Valve Rear Heater"
-    id: sw_valve_rear_heater
-    pin: 33
-    inverted: true
-
-  - platform: gpio
-    name: "Valve HW Bypass"
-    id: sw_valve_hw_bypass
-    restore_mode: ALWAYS_OFF
-    pin: 
-      number: 18
-      inverted: true
-      
-    on_turn_on:
-    - lambda: |- 
-        id(water_flow_meter).pause_total(true);
-    - delay: 10s
-    - switch.turn_off: sw_valve_hw_bypass
-    
-    on_turn_off:
-    - lambda: |- 
-        id(water_flow_meter).pause_total(false);
-
-  - platform: gpio
-    name: "Valve Coolant Recirculator"
-    pin: 5
-
-
-
-    
+  
 output: 
    # sx1509 
   - platform: sx1509
@@ -237,15 +201,6 @@ output:
 # 13- 15 are photorelays
 
 
-
-
-#esp32 gpio
-  - platform: ledc
-    frequency: "29296Hz"
-    min_power: .29
-    pin: 19
-    id: hbridge_1
-    zero_means_zero : true
    
     # this is a high-side switch.  It switches 12v input provided through adjacent connector pin
   - platform: gpio
@@ -707,17 +662,7 @@ binary_sensor:
     filters:
       - invert:
       - delayed_on: 10ms
-    on_click:
-      min_length: 10ms
-      max_length: 450ms
-      then:
-        if:
-          condition:
-            switch.is_on: sw_valve_hw_bypass
-          then:
-            - switch.turn_off: sw_valve_hw_bypass
-          else:
-            - switch.turn_on: sw_valve_hw_bypass
+    
 
   - platform: gpio
     name: "Inverter Enabled"
@@ -734,6 +679,7 @@ sensor:
   - platform: duty_cycle
     name: "Cab Light On"
     id: input_cab_light
+    update_interval: 1s
     pin: 
       number: 36
       mode:

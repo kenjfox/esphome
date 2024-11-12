@@ -1,0 +1,204 @@
+esphome:
+  name: $name
+
+substitutions:
+  name: "hvac-controller"
+  lower_devicename: $name
+  devicename: $name
+  config_version: "v2024.11.10.001"
+  password: "govango!"
+
+  
+esp32:
+  board: esp32dev
+  framework:
+    type: esp-idf
+
+# Enable logging
+logger:
+  #baud_rate: 115200
+  level: WARN
+  logs:
+    sensor: WARN
+    gpio.binary_sensor: WARN
+    light: WARN
+    dallas.sensor: WARN
+    switch: WARN
+# Enable Home Assistant API
+api:
+  encryption: 
+    key: 5WNEEUZ7KqqdKXQRU8CoUeHMgO0euq66s1HnUAoDzog=
+
+ota:
+  password: $password
+
+wifi:
+  ssid: "vango-inside"
+  password: "govango!"
+  reboot_timeout: 60s
+  #ssid: "foxstar"
+  #password: "12345678&"
+  fast_connect: true
+
+dallas:
+  - pin: 21
+    update_interval: 1s
+sensor:
+# Temp Sensors
+  - platform: dallas
+    address:      0x183c01f096863028
+    name: "Temp Water Heater"
+    id: temp_water_htr
+  
+  - platform: dallas
+    address:      0xfc3c01f09638f928
+    name: "Temp Heater Intake"
+    id: temp_htr_intake
+
+globals:
+  - id: bln_water_heater_valve_open
+    type: bool
+    restore_value: yes
+    initial_value: 'false'
+  - id: bln_heater_valve_open
+    type: bool
+    restore_value: yes
+    initial_value: 'false'
+  - id: bln_hw_bypass_valve_open
+    type: bool
+    restore_value: yes
+    initial_value: 'false'
+
+switch:
+  - platform: gpio
+    pin: 33
+    id: water_heater_valve_close
+    restore_mode: RESTORE_DEFAULT_OFF
+    inverted: false
+    internal: true
+    interlock: [water_heater_valve_open]
+   
+  
+  - platform: gpio
+    pin: 32
+    id: water_heater_valve_open
+    restore_mode: RESTORE_DEFAULT_OFF
+    inverted: false
+    internal: true
+    interlock: [water_heater_valve_close]
+    
+  
+  - platform: gpio
+    pin: 26
+    id: heater_valve_close
+    restore_mode: RESTORE_DEFAULT_OFF
+    inverted: false
+    internal: true
+    interlock: [heater_valve_open]
+    
+  
+  - platform: gpio
+    pin: 25
+    id: heater_valve_open
+    restore_mode: RESTORE_DEFAULT_OFF
+    inverted: false
+    internal: true
+    interlock: [heater_valve_close]
+    
+  
+  - platform: gpio
+    pin: 14
+    id: hw_bypass_valve_close
+    name: "HW Bypass Valve Close"
+    restore_mode: RESTORE_DEFAULT_OFF
+    inverted: false
+    internal: true
+    interlock: [hw_bypass_valve_open]
+    
+  
+  - platform: gpio
+    pin: 27
+    id: hw_bypass_valve_open
+    name: "HW Bypass Valve Open"
+    restore_mode: RESTORE_DEFAULT_OFF
+    inverted: false
+    internal: true
+    interlock: [hw_bypass_valve_close]
+    
+  - platform: template
+    name: "Valve Water Heater"
+    id: sw_valve_water_heater
+    restore_mode: RESTORE_DEFAULT_OFF
+    lambda: |-
+      return id(bln_water_heater_valve_open)==true;
+    turn_on_action:
+    - globals.set:
+        id: bln_water_heater_valve_open
+        value: "true"
+    - switch.turn_off: water_heater_valve_close
+    - switch.turn_on: water_heater_valve_open
+    turn_off_action:
+    - globals.set:
+        id: bln_water_heater_valve_open
+        value: "false"
+    - switch.turn_off: water_heater_valve_open
+    - switch.turn_on: water_heater_valve_close
+
+  - platform: template
+    name: "Valve Rear Heater"
+    id: sw_valve_rear_heater
+    restore_mode: RESTORE_DEFAULT_OFF
+    lambda: |-
+      return id(bln_heater_valve_open)==true;
+    turn_on_action:
+    - globals.set:
+        id: bln_heater_valve_open
+        value: "true"
+    - switch.turn_off: heater_valve_close
+    - switch.turn_on: heater_valve_open
+    turn_off_action:
+    - globals.set:
+        id: bln_heater_valve_open
+        value: "false"
+    - switch.turn_off: heater_valve_open
+    - switch.turn_on: heater_valve_close
+
+  - platform: template
+    name: "Valve HW Bypass"
+    id: sw_valve_hw_bypass
+    restore_mode: RESTORE_DEFAULT_OFF
+    lambda: |-
+      return id(bln_hw_bypass_valve_open) == true;
+    turn_on_action:
+    - globals.set:
+        id: bln_hw_bypass_valve_open
+        value: "true"
+    - switch.turn_off: hw_bypass_valve_close
+    - switch.turn_on: hw_bypass_valve_open
+    turn_off_action:
+    - globals.set:
+        id: bln_hw_bypass_valve_open
+        value: "false"
+    - switch.turn_off: hw_bypass_valve_open
+    - switch.turn_on: hw_bypass_valve_close
+    on_turn_on:
+    - delay: 15s
+    - switch.turn_off: sw_valve_hw_bypass
+output:
+  - platform: ledc
+    frequency: "20000Hz"
+    min_power:   .15
+    pin: 12
+    id: hbridge_1
+    zero_means_zero : true
+
+fan:
+  - platform: speed
+    id: rear_heater_fan
+    name: "Rear Heater Fan"
+    restore_mode: RESTORE_DEFAULT_OFF
+    output: hbridge_1
+    speed_count: 100
+   
+ 
+

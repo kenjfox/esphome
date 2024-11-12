@@ -1,5 +1,5 @@
  uart:
-  id: uart0
+  id: uartSmartShunt
   tx_pin: 26
   rx_pin: 25
   baud_rate: 19200
@@ -15,7 +15,7 @@
     sequence:
       - lambda: UARTDebug::log_string(direction, bytes);
  victron_smart_shunt:
-  uart_id: uart0
+  uart_id: uartSmartShunt
 
  
        

@@ -67,7 +67,7 @@ bool HwPulseCounterStorage::pulse_counter_setup(InternalGPIOPin *pin) {
   }
 
   ESP_LOGCONFIG(TAG, "    PCNT Unit Number: %u", this->pcnt_unit);
-  ESP_LOGW(TAG, "pulse_counter_setup");
+  ESP_LOGCONFIG(TAG, "    PCNT Channel Number: %u", this->pcnt_channel);
 
   pcnt_count_mode_t rising = PCNT_COUNT_DIS, falling = PCNT_COUNT_DIS;
   switch (this->rising_edge_mode) {
@@ -181,7 +181,6 @@ void PulseCounterSensor::set_total_pulses(uint32_t pulses) {
   this->current_total_ = pulses;
   this->total_sensor_->publish_state(pulses);
 }
-
 
 void PulseCounterSensor::dump_config() {
   LOG_SENSOR("", "Pulse Counter", this);

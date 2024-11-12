@@ -26,26 +26,26 @@ sensor:
       name: "Heap Max Block"
     loop_time:
       name: "Loop Time"
-  - platform: wifi_signal
-    name: "${devicename} WiFi Signal Sensor"
-    id: rssi_sensor
-    update_interval: 15s
+  # - platform: wifi_signal
+  #   name: "${devicename} WiFi Signal Sensor"
+  #   id: rssi_sensor
+  #   update_interval: 15s
 
-  - platform: template
-    name: "Wifi Quality"
-    unit_of_measurement: "%"
-    accuracy_decimals: 0
-    icon: "mdi:wifi"
-    update_interval: 15s
-    lambda: |-
-        int quality;
-        const int rssi = id(rssi_sensor).state;
-          if (rssi <= -100) { quality = 0;}
-          else if (rssi >= -50)
-          {  quality = 100; }
-          else
-          {  quality = 2 * (rssi + 100); }
-          return quality;
+  # - platform: template
+  #   name: "Wifi Quality"
+  #   unit_of_measurement: "%"
+  #   accuracy_decimals: 0
+  #   icon: "mdi:wifi"
+  #   update_interval: 15s
+  #   lambda: |-
+  #       int quality;
+  #       const int rssi = id(rssi_sensor).state;
+  #         if (rssi <= -100) { quality = 0;}
+  #         else if (rssi >= -50)
+  #         {  quality = 100; }
+  #         else
+  #         {  quality = 2 * (rssi + 100); }
+  #         return quality;
 
   - platform: uptime
     name: "${devicename} Uptime"

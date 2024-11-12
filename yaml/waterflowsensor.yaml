@@ -2,7 +2,7 @@ number:
   - platform: template
     id: tank_capacity
     name: Tank Capacity
-    device_class: water
+    device_class: "water"
     unit_of_measurement: "gal"
     restore_value: true
     max_value: 25

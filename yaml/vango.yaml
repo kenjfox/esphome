@@ -11,7 +11,7 @@ substitutions:
 
 esphome:
   name: $name
-    
+
 esp32:
   board: esp32dev
   variant: esp32
@@ -21,7 +21,7 @@ esp32:
 
 # Enable logging
 logger:
-  #baud_rate: 115200
+  # baud_rate: 115200
   level: DEBUG
   logs:
     sensor: WARN
@@ -42,21 +42,20 @@ logger:
     tank_level.sensor: WARN
     monochromatic: WARN
 
-
 # Enable Home Assistant API
 api:
   password: $password
 
 ota:
-  password: $password
+  - platform: esphome
+    password: $password
 
 i2c:
-   - id: bus_a
-     sda: 21
-     scl: 22
-     scan: true
-     frequency: 50kHz
-
+  - id: bus_a
+    sda: 21
+    scl: 22
+    scan: true
+    frequency: 50kHz
 
 packages:
   system: !include system.yaml
@@ -68,5 +67,3 @@ packages:
   gpio: !include gpio.yaml
   victron: !include victron_smartshunt.yaml
   climate: !include climate.yaml
-
-

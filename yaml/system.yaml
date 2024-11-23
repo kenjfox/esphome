@@ -1,7 +1,7 @@
 wifi:
-  ssid: "vango-inside"
-  password: "govango!" # $password
-  fast_connect: on
+  ssid: "foxstar" #"vango-inside"
+  password: "12345678&" #"govango!" # $password
+  #fast_connect: on
   power_save_mode: none
   reboot_timeout: 60s
 

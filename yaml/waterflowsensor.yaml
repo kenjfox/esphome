@@ -12,20 +12,20 @@ number:
     optimistic: true
 
 sensor:
-# water flow sensor  
+  # water flow sensor
   - platform: pulse_counter
     name: "Water Flow Rate"
     id: "water_flow_meter"
     pin: 39
-    count_mode: 
+    count_mode:
       falling_edge: INCREMENT
       rising_edge: DISABLE
-    update_interval: .5s
+    update_interval: 1s
     filters:
-     - multiply: 0.000583431   # calibrated at sink ~ 450 pulses per litre
-    unit_of_measurement: "GPM"  
+      - multiply: 0.000583431 # calibrated at sink ~ 450 pulses per litre
+    unit_of_measurement: "GPM"
     accuracy_decimals: 2
-    
+
     total:
       unit_of_measurement: "gal"
       name: "Total Water Used"
@@ -38,18 +38,16 @@ sensor:
         then:
           - lambda: |-
               float v = 0;
-              if ( id(tank_capacity).state) 
+              if ( id(tank_capacity).state)
                 v= id(tank_capacity).state - id(total_water_used).state;
               id(remaining_water_calc).publish_state(v);
-     
+
     disable_pulse_count:
       name: "Water Flow Totaling Disabled"
 
   - platform: template
     name: "Remaining Water (Calculated)"
-    id: remaining_water_calc     
-    
-
+    id: remaining_water_calc
 
 button:
   - platform: template
@@ -57,8 +55,6 @@ button:
     name: "Water Flow Reset Total"
     on_press:
       then:
-      - logger.log: "Reset Button Pressed"
-      - lambda: |-
-          id(water_flow_meter).reset_total();
-
- 
+        - logger.log: "Reset Button Pressed"
+        - lambda: |-
+            id(water_flow_meter).reset_total();

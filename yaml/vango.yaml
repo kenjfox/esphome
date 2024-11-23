@@ -15,6 +15,7 @@ esphome:
 esp32:
   board: esp32dev
   variant: esp32
+  flash_size: 8MB
   framework:
     type: esp-idf
     version: recommended
@@ -30,9 +31,10 @@ logger:
     light: WARN
     mpu6050: WARN
     pulse_counter: WARN
-    sx1509: WARN
+    sx1509: DEBUG
     text_sensor: WARN
-    dallas.sensor: WARN
+    dallas.temp.sensor: ERROR
+    dallas_temp.sensor: ERROR
     bme280.sensor: WARN
     victron_smart_shunt: ERROR
     uart_debug: WARN
@@ -44,7 +46,8 @@ logger:
 
 # Enable Home Assistant API
 api:
-  password: $password
+  encryption:
+    key: 5WNEEUZ7KqqdKXQRU8CoUeHMgO0euq66s1HnUAoDzog=
 
 ota:
   - platform: esphome

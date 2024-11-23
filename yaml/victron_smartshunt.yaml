@@ -1,4 +1,4 @@
- uart:
+uart:
   id: uartSmartShunt
   tx_pin: 26
   rx_pin: 25
@@ -7,19 +7,17 @@
   data_bits: 8
   parity: NONE
   rx_buffer_size: 1024
-  debug:
-    direction: BOTH
-    dummy_receiver: false
-    after:
-      delimiter: "\n"
-    sequence:
-      - lambda: UARTDebug::log_string(direction, bytes);
- victron_smart_shunt:
+  # debug:
+  #   direction: BOTH
+  #   dummy_receiver: false
+  #   after:
+  #     delimiter: "\n"
+  #   sequence:
+  #     - lambda: UARTDebug::log_string(direction, bytes);
+victron_smart_shunt:
   uart_id: uartSmartShunt
 
- 
-       
- sensor:
+sensor:
   - platform: victron_smart_shunt
     battery_voltage:
       name: "Battery Voltage"
@@ -52,7 +50,6 @@
       id: time_to_go
       device_class: duration
       unit_of_measurement: h
-    
 
     consumed_amp_hours:
       name: "Consumed Amp Hours"
@@ -124,7 +121,7 @@
       name: "Alarm Reason Text"
 
     depth_of_average_discharge:
-      id:  depth_of_average_discharge
+      id: depth_of_average_discharge
       name: "Depth of Average Discharge"
 
     cumulative_amp_hours_drawn:

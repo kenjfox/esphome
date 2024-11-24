@@ -8,6 +8,7 @@
 #include "esphome/core/color.h"
 #include "esphome/core/automation.h"
 #include "esphome/core/time.h"
+#include "esphome/core/log.h"
 #include "display_color_utils.h"
 
 #ifdef USE_GRAPH
@@ -258,6 +259,13 @@ class Display : public PollingComponent {
   /// Draw a straight line from the point [x1,y1] to [x2,y2] with the given color.
   void line(int x1, int y1, int x2, int y2, Color color = COLOR_ON);
 
+  /// Draw a straight line at the given angle based on the origin [x, y] for a specified length with the given color.
+  void line_at_angle(int x, int y, int angle, int length, Color color = COLOR_ON);
+
+  /// Draw a straight line at the given angle based on the origin [x, y] from a specified start and stop radius with the
+  /// given color.
+  void line_at_angle(int x, int y, int angle, int start_radius, int stop_radius, Color color = COLOR_ON);
+
   /// Draw a horizontal line from the point [x,y] to [x+width,y] with the given color.
   void horizontal_line(int x, int y, int width, Color color = COLOR_ON);
 
@@ -276,6 +284,13 @@ class Display : public PollingComponent {
 
   /// Fill a circle centered around [center_x,center_y] with the radius radius with the given color.
   void filled_circle(int center_x, int center_y, int radius, Color color = COLOR_ON);
+
+  /// Fill a ring centered around [center_x,center_y] between two circles with the radius1 and radius2 with the given
+  /// color.
+  void filled_ring(int center_x, int center_y, int radius1, int radius2, Color color = COLOR_ON);
+  /// Fill a half-ring "gauge" centered around [center_x,center_y] between two circles with the radius1 and radius2
+  /// with he given color and filled up to 'progress' percent
+  void filled_gauge(int center_x, int center_y, int radius1, int radius2, int progress, Color color = COLOR_ON);
 
   /// Draw the outline of a triangle contained between the points [x1,y1], [x2,y2] and [x3,y3] with the given color.
   void triangle(int x1, int y1, int x2, int y2, int x3, int y3, Color color = COLOR_ON);
@@ -624,6 +639,9 @@ class Display : public PollingComponent {
    */
   bool clip(int x, int y);
 
+  void test_card();
+  void show_test_card() { this->show_test_card_ = true; }
+
  protected:
   bool clamp_x_(int x, int w, int &min_x, int &max_x);
   bool clamp_y_(int y, int h, int &min_y, int &max_y);
@@ -652,6 +670,7 @@ class Display : public PollingComponent {
   std::vector<DisplayOnPageChangeTrigger *> on_page_change_triggers_;
   bool auto_clear_enabled_{true};
   std::vector<Rect> clipping_rectangle_;
+  bool show_test_card_{false};
 };
 
 class DisplayPage {
@@ -725,6 +744,8 @@ class DisplayOnPageChangeTrigger : public Trigger<DisplayPage *, DisplayPage *> 
   DisplayPage *from_{nullptr};
   DisplayPage *to_{nullptr};
 };
+
+const LogString *text_align_to_string(TextAlign textalign);
 
 }  // namespace display
 }  // namespace esphome

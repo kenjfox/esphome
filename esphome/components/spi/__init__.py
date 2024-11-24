@@ -1,40 +1,37 @@
 import re
 
+from esphome import pins
 import esphome.codegen as cg
-import esphome.config_validation as cv
-import esphome.final_validate as fv
 from esphome.components.esp32.const import (
     KEY_ESP32,
-    VARIANT_ESP32S2,
-    VARIANT_ESP32S3,
     VARIANT_ESP32C2,
     VARIANT_ESP32C3,
     VARIANT_ESP32C6,
     VARIANT_ESP32H2,
+    VARIANT_ESP32S2,
+    VARIANT_ESP32S3,
 )
-from esphome import pins
+import esphome.config_validation as cv
 from esphome.const import (
     CONF_CLK_PIN,
+    CONF_CS_PIN,
+    CONF_DATA_PINS,
+    CONF_DATA_RATE,
     CONF_ID,
+    CONF_INVERTED,
     CONF_MISO_PIN,
     CONF_MOSI_PIN,
-    CONF_SPI_ID,
-    CONF_CS_PIN,
     CONF_NUMBER,
-    CONF_INVERTED,
+    CONF_SPI_ID,
     KEY_CORE,
     KEY_TARGET_PLATFORM,
     KEY_VARIANT,
-    CONF_DATA_RATE,
     PLATFORM_ESP32,
     PLATFORM_ESP8266,
     PLATFORM_RP2040,
-    CONF_DATA_PINS,
 )
-from esphome.core import (
-    coroutine_with_priority,
-    CORE,
-)
+from esphome.core import CORE, coroutine_with_priority
+import esphome.final_validate as fv
 
 CODEOWNERS = ["@esphome/core", "@clydebarrow"]
 spi_ns = cg.esphome_ns.namespace("spi")
@@ -69,6 +66,10 @@ SPI_MODE_OPTIONS = {
     1: SPIMode.MODE1,
     2: SPIMode.MODE2,
     3: SPIMode.MODE3,
+    "0": SPIMode.MODE0,
+    "1": SPIMode.MODE1,
+    "2": SPIMode.MODE2,
+    "3": SPIMode.MODE3,
 }
 
 CONF_SPI_MODE = "spi_mode"
@@ -268,6 +269,9 @@ SPI_SCHEMA = cv.All(
                 *sum(get_hw_interface_list(), ["software", "hardware", "any"]),
                 lower=True,
             ),
+            cv.Optional(CONF_DATA_PINS): cv.invalid(
+                "'data_pins' should be used with 'type: quad' only"
+            ),
         }
     ),
     cv.has_at_least_one_key(CONF_MISO_PIN, CONF_MOSI_PIN),
@@ -286,6 +290,12 @@ SPI_QUAD_SCHEMA = cv.All(
             cv.Optional(CONF_INTERFACE, default="hardware"): cv.one_of(
                 *sum(get_hw_interface_list(), ["hardware"]),
                 lower=True,
+            ),
+            cv.Optional(CONF_MISO_PIN): cv.invalid(
+                "'miso_pin' should not be used with quad SPI"
+            ),
+            cv.Optional(CONF_MOSI_PIN): cv.invalid(
+                "'mosi_pin' should not be used with quad SPI"
             ),
         }
     ),

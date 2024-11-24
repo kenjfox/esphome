@@ -28,7 +28,6 @@ using pulse_counter_t = int16_t;
 using pulse_counter_t = int32_t;
 #endif
 
-
 struct PulseCounterStorageBase {
   virtual bool pulse_counter_setup(InternalGPIOPin *pin) = 0;
   virtual pulse_counter_t read_raw_value() = 0;
@@ -52,15 +51,13 @@ struct BasicPulseCounterStorage : public PulseCounterStorageBase {
   ISRInternalGPIOPin isr_pin;
 };
 
-
-
-
 #ifdef HAS_PCNT
 struct HwPulseCounterStorage : public PulseCounterStorageBase {
   bool pulse_counter_setup(InternalGPIOPin *pin) override;
   pulse_counter_t read_raw_value() override;
 
   pcnt_unit_t pcnt_unit;
+  pcnt_channel_t pcnt_channel;
 };
 #endif
 

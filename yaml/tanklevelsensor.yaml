@@ -4,9 +4,8 @@ sensor:
     pin: 34
     id: freshwater_tank_adc
     name: "Freshwater Tank ADC"
-    attenuation: 11dB
+    attenuation: 12dB
     update_interval: never
-    
 
   - platform: tank_level_sensor
     id: freshwater_level_sensor
@@ -28,12 +27,11 @@ sensor:
       id: sensor_freshwater_voltage
       name: "Freshwater voltage"
 
- 
   - platform: adc
     pin: 35
     id: graywater_tank_adc
     name: "Graywater Tank ADC"
-    attenuation: 11dB
+    attenuation: 12dB
     update_interval: never
 
   - platform: tank_level_sensor

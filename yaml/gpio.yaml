@@ -4,47 +4,30 @@ sx1509:
 
 switch:
   #sx1509 outputs
-  - platform: gpio
+  - platform: output
     name: "Battery Heater"
     id: sw_battery_heater
-    pin:
-      sx1509: sx1509_hub
-      number: 11
-      mode:
-        output: true
-      inverted: false
+    output: sx_11
     restore_mode: ALWAYS_OFF
-  - platform: gpio
+
+  - platform: output
     name: "Inverter"
     id: "sw_inverter"
-    pin:
-      sx1509: sx1509_hub
-      number: 13
-      mode:
-        output: true
-      inverted: false
+    output: sx_13
+    internal: true
     on_turn_on:
       - delay: 250ms
       - switch.turn_off: sw_inverter
-  - platform: gpio
+
+  - platform: output
     name: "Diesel Heater"
-    pin:
-      sx1509: sx1509_hub
-      number: 14
-      mode:
-        output: true
-      inverted: false
+    output: sx_14
     restore_mode: ALWAYS_OFF
 
-  - platform: gpio
+  - platform: output
     name: "Audio"
     id: sw_audio
-    pin:
-      sx1509: sx1509_hub
-      number: 15
-      mode:
-        output: true
-      inverted: false
+    output: sx_15
 
   - platform: output
     name: "Water Pump"
@@ -191,9 +174,23 @@ output:
 
   # sx 12 is input
 
-  # 13- 15 are photorelays
+  #sx1509 outputs - solid state relays
+  - platform: sx1509
+    id: sx_13
+    pin: 13
+    inverted: true
 
-  # this is a high-side switch.  It switches 12v input provided through adjacent connector pin
+  - platform: sx1509
+    id: sx_14
+    pin: 14
+    inverted: true
+
+  - platform: sx1509
+    id: sx_15
+    pin: 15
+    inverted: true
+
+    # this is a high-side switch.  It switches 12v input provided through adjacent connector pin
   - platform: gpio
     id: highside_switch_1
     pin: 15

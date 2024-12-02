@@ -1,0 +1,152 @@
+esphome:
+  name: maxxfan
+
+substitutions:
+  name: "maxxfan"
+  lower_devicename: $name
+  devicename: "maxxfan"
+  config_version: "v2024.11.03.001"
+  accuracy: "2"
+  password: "govango!"
+  device_verbose_name: "MaxxFan"
+  
+esp32:
+  board: esp32dev
+  framework:
+    type: esp-idf
+
+# Enable logging
+logger:
+  level: WARN
+# Enable Home Assistant API
+api:
+  encryption: 
+    key: 5WNEEUZ7KqqdKXQRU8CoUeHMgO0euq66s1HnUAoDzog=
+
+ota:
+  password: $password
+
+wifi:
+  ssid: "vango-inside"
+  password: "govango!"
+  reboot_timeout: 60s
+   # - ssid: "foxstar"
+   # - password: "12345678&"
+  fast_connect: true
+  # Enable fallback hotspot (captive portal) in case wifi connection fails
+  
+
+output:
+  - platform: ledc
+    frequency: "20000Hz"
+    min_power: 0
+    pin: 22
+    id: hbr_speed
+    zero_means_zero : true
+  - platform: gpio
+    pin: 23
+    id: fan_direction
+  
+  
+
+  - platform: template
+    type: float
+    id: fan_hbridge
+    write_action:
+      then:
+        - lambda: |-
+            float level = state;
+            if(level == 0)
+            {
+              id(hbr_speed).set_level(0);
+              id(fan_direction).turn_off();
+            } 
+            else
+            if(id(maxxfan).direction == FanDirection::FORWARD) {
+              id(fan_direction).turn_on();
+              id(hbr_speed).set_level(level);
+              ESP_LOGD("fan_hbridge", "Running Forward @ %0.2f ", state);
+            } else {
+              id(fan_direction).turn_off();
+              id(hbr_speed).set_level(level);
+              
+              ESP_LOGD("fan_hbridge", "Running Backwards @ %0.2f ", state);
+            }
+   
+  
+
+switch:
+  - platform: gpio
+    pin: 18
+    id: cover_switch_close
+    name: "Cover Switch Close"
+    restore_mode: RESTORE_DEFAULT_OFF
+    inverted: false
+    internal: true
+    #interlock: [cover_switch_close]
+    on_turn_on:
+    - delay: 5s
+    - switch.turn_off: cover_switch_close
+  - platform: gpio
+    pin: 19
+    id: cover_switch_open
+    name: "Cover Switch Open"
+    restore_mode: RESTORE_DEFAULT_OFF
+    inverted: false
+    internal: true
+    #interlock: [cover_switch_open]
+    on_turn_on:
+    - delay: 6.5s
+    - switch.turn_off: cover_switch_open
+  
+  - platform: output
+    id: fan_intake
+    name: "Fan Intake"
+    output: fan_direction
+    restore_mode: DISABLED
+
+globals:
+  - type: bool
+    id: cover_open
+    restore_value: yes
+    initial_value: "false"
+    
+    
+    
+cover:
+  - platform: template
+    id: fan_cover
+    restore_mode: RESTORE
+    name: "Fan Cover"
+    lambda: |-
+      if (id(cover_open)==true ){
+        return COVER_OPEN;
+      } else {
+        return COVER_CLOSED;
+      }
+    open_action:
+      - switch.turn_off: cover_switch_close
+      - switch.turn_on: cover_switch_open
+      - globals.set:
+          id: cover_open
+          value: "true"
+     
+    close_action:
+      - switch.turn_off: cover_switch_open
+      - switch.turn_on: cover_switch_close
+      - globals.set:
+          id: cover_open
+          value: "false"
+    
+fan:
+  - platform: speed
+    id: maxxfan
+    name: "Maxxfan"
+    restore_mode: RESTORE_DEFAULT_OFF
+    output: fan_hbridge
+    speed_count: 100
+    direction_output: fan_direction
+    
+    
+captive_portal:
+    

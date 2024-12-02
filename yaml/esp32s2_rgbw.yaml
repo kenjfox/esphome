@@ -1,0 +1,139 @@
+substitutions:
+  device_name: "Kitchen Task Light"
+  device_id: kitchen_task_light
+  button_id: btn_${device_id}
+  wifi_name: "kitchentasklight"
+  password: "govango!"
+
+esphome:
+  name: ${wifi_name}
+ 
+esp32:
+  board: esp32-s2-saola-1
+  framework:
+    type: esp-idf
+    version: recommended
+
+
+wifi:
+  fast_connect: on
+  ssid: "vango-inside"
+  password: $password
+  power_save_mode: none
+
+  # Enable fallback hotspot (captive portal) in case wifi connection fails
+  ap:
+    ap_timeout: 5min
+    ssid: "${device_name} hotspot"
+
+#captive_portal:
+logger:
+api:
+ota:
+
+globals:
+   - id: "dim_direction"
+     type: bool
+     restore_value: yes
+     initial_value: "true"
+
+binary_sensor:
+  - platform: gpio
+    name: "Button ${device_name}"
+    id: ${button_id}
+    pin: 
+      number: GPIO5
+      mode:
+        input: true
+        pullup: true
+        #be sure not to enable pullup- shelly must have it built-in
+    
+    filters:
+      - invert:
+      - delayed_on: 10ms
+    on_click: 
+      min_length: 10ms
+      max_length: 400ms
+      then:
+        - light.toggle: ${device_id}
+
+    on_press:
+      then:
+        - delay: .25s
+        - while:
+            condition:
+              binary_sensor.is_on: ${button_id}
+            then:
+              - if:
+                  condition:
+                    lambda: |-
+                      auto val = id(${device_id}).remote_values.get_brightness();
+                      auto dir =  id(dim_direction);
+                      if( dir && val >= 1)
+                       id(dim_direction) = false;
+                      return id(dim_direction);
+                  then:
+                    - light.dim_relative:
+                        id: ${device_id}
+                        relative_brightness: .5%
+                        transition_length: 0s
+                  else:
+                    - light.dim_relative:
+                        id: ${device_id}
+                        relative_brightness: -.5%
+                        transition_length: 0s
+              - delay: .02s
+
+light:
+  - platform: rgbw
+    id: ${device_id}
+    name: ${device_name}
+    red: pwm_r
+    green: pwm_g
+    blue: pwm_b
+    white: pwm_w
+    effects:
+      - random:
+      - strobe:
+          name: Strobe Effect With Violet
+          colors:
+            - state: true
+              brightness: 100%
+              red: 100%
+              green: 0%
+              blue: 100%
+              white: 0%
+              duration: 10ms
+            - state: false
+              duration: 50ms
+            
+      - flicker:
+
+output:
+  - platform: ledc
+    pin: GPIO1 # default pin is 12
+    frequency: 19531Hz 
+    id: pwm_r
+    min_power: .011
+    zero_means_zero: true
+
+  - platform: ledc
+    pin: GPIO2
+    frequency: 19531Hz 
+    id: pwm_g
+    min_power: .011
+    zero_means_zero: true
+
+  - platform: ledc
+    pin: GPIO3 # default pin is 14
+    frequency: 19531Hz 
+    id: pwm_b
+    min_power: .011
+    zero_means_zero: true
+
+  - platform: ledc
+    pin: GPIO4 #default pin is 4
+    frequency: 19531Hz 
+    id: pwm_w
+    min_power: .011
+    zero_means_zero: true

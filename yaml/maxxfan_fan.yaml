@@ -1,0 +1,72 @@
+substitutions:
+  name: "maxxfan"
+  lower_devicename: $name
+  devicename: "maxxfan"
+  config_version: "v2022.07.06.001"
+  # wifi_fast_connect: "false"
+  wifi_reboot_timeout: 60s
+  accuracy: "2"
+  password: "govango!"
+  device_verbose_name: "MaxxFan"
+
+esphome:
+  name: $name
+  
+esp32:
+  board: esp32dev
+  variant: esp32
+  framework:
+    type: esp-idf
+    version: recommended
+
+wifi:
+  ssid:     vango-inside
+  password: $password
+
+
+logger:
+  level: VERBOSE
+
+api:
+  encryption: 
+    key: 5WNEEUZ7KqqdKXQRU8CoUeHMgO0euq66s1HnUAoDzog=
+
+ota:
+  password: $password
+
+output:
+  - platform: ledc
+    frequency: "10000Hz"
+    min_power: 0
+    pin: 16
+    id: hbridge_1
+    inverted: true
+    zero_means_zero: true
+  - platform: ledc
+    frequency: "10000Hz"
+    min_power: 0
+    pin: 17
+    id: hbridge_2
+    inverted: true
+    zero_means_zero: true
+   
+  
+
+
+fan:
+- platform: hbridge
+  name: "MaxxFan"
+
+  id: $devicename
+  pin_a: hbridge_1
+  pin_b: hbridge_2
+  speed_count: 100
+
+ # pin_cover_a: GPIO34
+  # pin_cover_b: GPIO35
+  
+  # use_fahrenheit: true
+  
+    
+
+

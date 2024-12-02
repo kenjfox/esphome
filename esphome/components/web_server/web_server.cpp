@@ -1139,12 +1139,14 @@ void WebServer::handle_climate_request(AsyncWebServerRequest *request, const Url
       auto mode = request->getParam("mode")->value();
       call.set_mode(mode.c_str());
     }
-
-    if (request->hasParam("fan_mode")) {
-      auto mode = request->getParam("fan_mode")->value();
-      call.set_fan_mode(mode.c_str());
+    if (request->hasParam("custom_preset")) {
+      String preset = request->getParam("custom_preset")->value();
+      call.set_preset(preset.c_str());
     }
-
+    if (request->hasParam("fan_mode")) {
+      String fmode = request->getParam("fan_mode")->value();
+      call.set_fan_mode(fmode.c_str());
+    }
     if (request->hasParam("swing_mode")) {
       auto mode = request->getParam("swing_mode")->value();
       call.set_swing_mode(mode.c_str());

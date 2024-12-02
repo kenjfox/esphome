@@ -107,6 +107,7 @@ void ProntoProtocol::send_pronto_(RemoteTransmitData *dst, const std::vector<uin
   ESP_LOGD(TAG, "Send Pronto: repeats=%d", repeats);
   if (NUMBERS_IN_PREAMBLE + intros + repeats != data.size()) {  // inconsistent sizes
     ESP_LOGE(TAG, "Inconsistent data, not sending");
+    ESP_LOGE(TAG, "Inconsistent data, not sending");
     return;
   }
 

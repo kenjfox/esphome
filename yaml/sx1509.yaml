@@ -1,0 +1,325 @@
+substitutions:
+  name: "sxtest"
+esphome:
+  name: $name
+
+esp32:
+  board: esp32dev
+  variant: esp32
+  flash_size: 8MB
+  framework:
+    type: esp-idf
+    version: recommended
+
+# Enable logging
+logger:
+  # baud_rate: 115200
+  level: DEBUG
+  #logs:
+  # sensor: WARN
+  # adc: WARN
+  # gpio.binary_sensor: WARN
+  # light: WARN
+  # mpu6050: WARN
+  # pulse_counter: WARN
+  # sx1509: WARN
+  # text_sensor: WARN
+  # dallas.sensor: WARN
+  # bme280.sensor: WARN
+  # victron_smart_shunt: ERROR
+  # uart_debug: WARN
+  # ledc: WARN
+  # climate: WARN
+  # fan: WARN
+  # tank_level.sensor: WARN
+  # monochromatic: WARN
+wifi:
+  ssid: "foxstar"
+  password: "12345678&" # $password
+  #fast_connect: on
+  power_save_mode: none
+  reboot_timeout: 60s
+
+# Enable Home Assistant API
+api:
+  encryption:
+    key: 5WNEEUZ7KqqdKXQRU8CoUeHMgO0euq66s1HnUAoDzog=
+
+ota:
+  - platform: esphome
+    password: "govango!"
+
+i2c:
+  - id: bus_a
+    sda: 21
+    scl: 22
+    scan: true
+    frequency: 50kHz
+
+sx1509:
+  - id: sx1509_hub
+    address: 0x3E
+
+switch:
+  #sx1509 outputs
+  - platform: gpio
+    name: "Battery Heater"
+    id: sw_battery_heater
+    pin:
+      sx1509: sx1509_hub
+      number: 11
+      mode:
+        output: true
+      inverted: false
+    restore_mode: ALWAYS_OFF
+  - platform: gpio
+    name: "Inverter"
+    id: "sw_inverter"
+    pin:
+      sx1509: sx1509_hub
+      number: 13
+      mode:
+        output: true
+      inverted: false
+    # on_turn_on:
+    #   - delay: 250ms
+    #   - switch.turn_off: sw_inverter
+
+  - platform: gpio
+    name: "Diesel Heater"
+    pin:
+      sx1509: sx1509_hub
+      number: 14
+      mode:
+        output: true
+      inverted: false
+    restore_mode: ALWAYS_OFF
+
+  - platform: gpio
+    name: "Audio"
+    id: sw_audio
+    pin:
+      sx1509: sx1509_hub
+      number: 15
+      mode:
+        output: true
+      inverted: false
+
+  - platform: output
+    name: "Water Pump"
+    id: sw_water_pump
+    output: sx_01
+
+output:
+  # sx1509
+  - platform: sx1509
+    id: sx_00
+    sx1509_id: sx1509_hub
+    pin: 0
+    inverted: true
+    min_power: .0001
+    max_power: 1
+    zero_means_zero: true
+    logarithmic: false
+    frequency: 3
+
+  - platform: sx1509
+    id: sx_01
+    sx1509_id: sx1509_hub
+    pin: 1
+    inverted: true
+
+  - platform: sx1509
+    id: sx_02
+    pin: 2
+    sx1509_id: sx1509_hub
+    inverted: true
+    min_power: 0
+    max_power: 1
+    zero_means_zero: true
+    logarithmic: false
+    frequency: 3
+
+  - platform: sx1509
+    id: sx_03
+    sx1509_id: sx1509_hub
+    pin: 3
+    inverted: true
+    min_power: 0
+    max_power: 1
+    zero_means_zero: true
+    logarithmic: false
+    frequency: 3
+
+  - platform: sx1509
+    sx1509_id: sx1509_hub
+    id: sx_04
+    pin: 4
+    inverted: true
+    min_power: 0.0001
+    max_power: 1
+    zero_means_zero: true
+    logarithmic: false
+    frequency: 7
+
+  #porch left
+  - platform: sx1509
+    sx1509_id: sx1509_hub
+    id: sx_05
+    pin: 5
+    inverted: true
+    min_power: 0.003
+    max_power: 1
+    zero_means_zero: true
+    logarithmic: true
+    frequency: 3
+  #porch rigth
+  - platform: sx1509
+    sx1509_id: sx1509_hub
+    id: sx_06
+    pin: 6
+    inverted: true
+    min_power: 0.003
+    max_power: 1
+    zero_means_zero: true
+    logarithmic: true
+    frequency: 3
+
+  - platform: sx1509
+    sx1509_id: sx1509_hub
+    id: sx_07
+    pin: 7
+    inverted: true
+    min_power: 0
+    max_power: 1
+    zero_means_zero: true
+    logarithmic: false
+    frequency: 3
+
+  - platform: sx1509
+    sx1509_id: sx1509_hub
+    id: sx_08
+    pin: 8
+    inverted: true
+    min_power: 0
+    max_power: 1
+    zero_means_zero: true
+    logarithmic: false
+    frequency: 3
+
+  - platform: sx1509
+    sx1509_id: sx1509_hub
+    id: sx_09
+    pin: 9
+    inverted: true
+    min_power: 0
+    max_power: 1
+    frequency: 3
+    zero_means_zero: true
+    logarithmic: false
+
+  - platform: sx1509
+    sx1509_id: sx1509_hub
+    id: sx_10
+    pin: 10
+    inverted: true
+    min_power: 0
+    max_power: 1
+    zero_means_zero: true
+    logarithmic: false
+    frequency: 3
+
+  - platform: sx1509
+    sx1509_id: sx1509_hub
+    id: sx_11
+    pin: 11
+    inverted: true
+
+# sx 12 is input
+
+# 13- 15 are photorelays
+
+light:
+  - platform: monochromatic
+    name: "Lights Rear Flood"
+    id: light_rear_flood
+    output: sx_00
+    gamma_correct: 0
+    effects:
+      - strobe:
+          colors:
+            - state: true
+              brightness: 100%
+              duration: 10ms
+            - state: false
+              duration: 50ms
+
+  - platform: monochromatic
+    name: "Lights Bed"
+    id: light_bed
+    output: sx_02
+    gamma_correct: 1.1
+
+  - platform: monochromatic
+    name: "Button Backlight"
+    id: light_button
+    output: sx_03
+    gamma_correct: 1.1
+
+  - platform: monochromatic
+    name: "Lights Cab"
+    id: light_cab
+    output: sx_04
+    gamma_correct: 0
+
+  - platform: monochromatic
+    name: "Lights Porch Right"
+    id: light_porch_right
+    output: sx_05
+    gamma_correct: 1.1
+    effects:
+      - strobe:
+          colors:
+            - state: true
+              brightness: 100%
+              duration: 10ms
+            - state: false
+              duration: 50ms
+
+  - platform: monochromatic
+    name: "Lights Porch Left"
+    id: light_porch_left
+    output: sx_06
+    gamma_correct: 1.1
+    effects:
+      - strobe:
+          colors:
+            - state: true
+              brightness: 100%
+              duration: 10ms
+            - state: false
+              duration: 50ms
+
+  - platform: monochromatic
+    name: "Lights Garage"
+    id: light_garage
+    output: sx_07
+    gamma_correct: 1.1
+
+  - platform: monochromatic
+    name: "Lights Hall"
+    id: light_hall
+    output: sx_08
+    gamma_correct: 1.1
+
+  - platform: monochromatic
+    name: "Lights Kitchen"
+    id: light_kitchen
+    output: sx_09
+    gamma_correct: 1.1
+
+  - platform: monochromatic
+    name: "Lights Shower"
+    id: light_shower
+    output: sx_10
+    gamma_correct: 1.1

@@ -1,0 +1,69 @@
+substitutions:
+  name: "shroomonitor"
+  lower_devicename: $name
+  devicename: "shroomanager"
+  config_version: "v2024.12.12.001"
+  # wifi_fast_connect: "false"
+  # wifi_reboot_timeout: 0s
+  accuracy: "2"
+  password: "govinego!"
+  device_verbose_name: "Shroom Manager"
+
+esphome:
+  name: $name
+    
+esp32:
+  board: esp32dev
+  variant: esp32
+  framework:
+    type: arduino
+    version: recommended
+
+# esp32:
+#   board: esp32-s2-saola-1
+#   variant: esp32S2
+#   framework:
+#     type: arduino
+#     version: latest
+
+wifi:
+  ssid:     foxstar
+  password: $password
+
+
+logger:
+  level: DEBUG
+
+api:
+ password: $password
+
+ota:
+  password: $password
+
+i2c:
+   - id: bus_a
+     sda: 21
+     scl: 22
+     scan: true
+     frequency: 50kHz
+
+web_server:
+  js_url: ""
+  js_include: "./v2/www2.js"
+  local: false
+  ota: false
+  version: 2
+
+sensor:
+  - platform: bme280
+    i2c_id: bus_a
+    temperature:
+      name: "BME280 Temperature"
+      id: temp_inside
+      oversampling: 16x
+    pressure:
+      name: "BME280 Pressure"
+    humidity:
+      name: "BME280 Humidity"
+    address: 0x76
+    update_interval: 1s 

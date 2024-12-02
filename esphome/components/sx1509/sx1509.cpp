@@ -84,6 +84,20 @@ void SX1509Component::digital_write(uint8_t pin, bool bit_value) {
     this->write_byte_16(REG_DATA_B, temp_reg_data);
   }
 }
+/*
+Enables high input mode for each [input-configured] IO
+0 : OFF. VIH max = 3.6V and VCCx min = 1.2V
+1 : ON. VIH max = 5.5V and VCCx min = 1.65V
+*/
+void SX1509Component::set_input_level(uint8_t pin, bool high) {
+  this->read_byte_16(REG_HIGH_INPUT_B, &this->high_input_mask_);
+  if (high) {
+    this->high_input_mask_ |= (1 << pin);  // 1 = high
+  } else {
+    this->high_input_mask_ &= ~(1 << pin);
+  }
+  this->write_byte_16(REG_HIGH_INPUT_B, this->high_input_mask_);
+}
 
 void SX1509Component::pin_mode(uint8_t pin, gpio::Flags flags) {
   ESP_LOGI(TAG, "Configuring pin %u with flags %x", pin, flags);
@@ -114,8 +128,8 @@ void SX1509Component::pin_mode(uint8_t pin, gpio::Flags flags) {
     this->ddr_mask_ &= ~(1 << pin);
     this->write_byte_16(REG_DIR_B, this->ddr_mask_);
   } else {
-    ESP_LOGD(TAG, "Input Mode for %u", pin);
-
+    ESP_LOGD(TAG, "Input Mode for %u", pin);  // 1 = input
+    this->set_input_level(pin, true);         // TODO: change to config parameter.
     // Always enable input buffer
     this->read_byte_16(REG_INPUT_DISABLE_B, &temp_word);
     temp_word &= ~(1 << pin);
@@ -145,32 +159,51 @@ void SX1509Component::pin_mode(uint8_t pin, gpio::Flags flags) {
   }
 }
 
-void SX1509Component::setup_led_driver(uint8_t pin) {
+void SX1509Component::setup_led_driver(uint8_t pin, uint8_t freq /*= 1*/, bool log /*= false*/) {
   uint16_t temp_word = 0;
   uint8_t temp_byte = 0;
-
+  // Disable input buffer
+  // Writing a 1 to the pin bit will disable that pins input buffer
   this->read_byte_16(REG_INPUT_DISABLE_B, &temp_word);
   temp_word |= (1 << pin);
   this->write_byte_16(REG_INPUT_DISABLE_B, temp_word);
-
+  // Disable pull-up
+  // Writing a 0 to the pin bit will disable that pull-up resistor
+  this->read_byte_16(REG_PULL_UP_B, &temp_word);
+  temp_word &= ~(1 << pin);
+  this->write_byte_16(REG_PULL_UP_B, temp_word);
+  // Set direction to output (REG_DIR_B)
   this->ddr_mask_ &= ~(1 << pin);  // 0=output
   this->write_byte_16(REG_DIR_B, this->ddr_mask_);
-
+  // Enable oscillator (REG_CLOCK)
   this->read_byte(REG_CLOCK, &temp_byte);
   temp_byte |= (1 << 6);   // Internal 2MHz oscillator part 1 (set bit 6)
   temp_byte &= ~(1 << 5);  // Internal 2MHz oscillator part 2 (clear bit 5)
   this->write_byte(REG_CLOCK, temp_byte);
 
+  // Configure LED driver clock and mode (REG_MISC)
   this->read_byte(REG_MISC, &temp_byte);
-  temp_byte &= ~(1 << 7);  // set linear mode bank B
-  temp_byte &= ~(1 << 3);  // set linear mode bank A
-  temp_byte |= 0x70;       // Frequency of the LED Driver clock ClkX of all IOs:
-  this->write_byte(REG_MISC, temp_byte);
+  if (log) {
+    temp_byte |= (1 << 7);  // set logarithmic mode bank B
+    temp_byte |= (1 << 3);  // set logarithmic mode bank A
+  } else {
+    temp_byte &= ~(1 << 7);  // set linear mode bank B
+    temp_byte &= ~(1 << 3);  // set linear mode bank A
+  }
 
+  // Frequency of the LED Driver clock ClkX of all IOs:  = fOSC/(2^(RegMisc[6:4]-1))
+  freq = (freq & 0x7) << 4;  // mask only 3 bits and shift to bit position 6:4
+  temp_byte |= freq;
+
+  this->write_byte(REG_MISC, temp_byte);
+  ESP_LOGCONFIG(TAG, "setup_led reg_misc = %d", temp_byte);
+
+  // Enable LED driver operation (REG_LED_DRIVER_ENABLE)
   this->read_byte_16(REG_LED_DRIVER_ENABLE_B, &temp_word);
   temp_word |= (1 << pin);
   this->write_byte_16(REG_LED_DRIVER_ENABLE_B, temp_word);
 
+  // Set REG_DATA bit low ~ LED driver started
   this->read_byte_16(REG_DATA_B, &temp_word);
   temp_word &= ~(1 << pin);
   output_state_ &= ~(1 << pin);
@@ -193,6 +226,8 @@ void SX1509Component::clock_(uint8_t osc_source, uint8_t osc_pin_function, uint8
   reg_misc &= ~(0b111 << 4);
   reg_misc |= osc_divider;
   this->write_byte(REG_MISC, reg_misc);
+
+  ESP_LOGCONFIG(TAG, "clock_ reg_misc = %d", reg_misc);
 }
 
 void SX1509Component::setup_keypad_() {

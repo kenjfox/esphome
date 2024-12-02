@@ -1,0 +1,13 @@
+sensor:
+  - platform: bme280_i2c
+    i2c_id: bus_a
+    temperature:
+      name: "BME280 Temperature"
+      id: temp_inside
+      oversampling: 16x
+    pressure:
+      name: "BME280 Pressure"
+    humidity:
+      name: "BME280 Humidity"
+    address: 0x76
+    update_interval: 1s 

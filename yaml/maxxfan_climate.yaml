@@ -1,0 +1,69 @@
+substitutions:
+  name: "maxxfan"
+  lower_devicename: $name
+  devicename: "maxxfan"
+  config_version: "v2024.04.12.001"
+  # wifi_fast_connect: "false"
+  # wifi_reboot_timeout: 0s
+  accuracy: "2"
+  password: "govango!"
+  device_verbose_name: "MaxxFan"
+
+esphome:
+  name: $name
+    
+esp32:
+  board: esp32dev
+  variant: esp32
+  framework:
+    type: arduino
+    version: recommended
+
+# esp32:
+#   board: esp32-s2-saola-1
+#   variant: esp32S2
+#   framework:
+#     type: arduino
+#     version: latest
+
+wifi:
+  ssid:     vango-inside
+  password: $password
+
+
+logger:
+  level: DEBUG
+
+api:
+ password: $password
+
+ota:
+  password: $password
+
+
+  
+climate:
+- platform: maxxfan_climate
+  id: "maxxfan_rear"
+  name: "MaxxFan"
+  supports_cool: true
+  supports_heat: false
+  transmitter_id: ir_rear_fan
+  use_fahrenheit: true
+
+# fan:
+# - platform: speed
+#   id: maxxfan_fan
+#   output: maxxfan_ir_climate_fanspeed
+#   direction_output: maxxfan_ir_climate_direction
+#   speed_count: 10
+
+
+web_server:
+  js_url: ""
+  js_include: "./v2/www2.js"
+  local: false
+  ota: false
+  version: 2
+
+

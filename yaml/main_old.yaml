@@ -1,0 +1,659 @@
+esphome:
+  name: victrontest
+  includes:
+    
+esp32:
+  board: esp32dev
+  variant: esp32
+  framework:
+    type: esp-idf
+    version: recommended
+
+
+substitutions:
+  lower_devicename: "victontest"
+  devicename: "victrontest"
+  config_version: "v2022.03.07.001"
+  # wifi_fast_connect: "false"
+  # wifi_reboot_timeout: 0s
+  accuracy: "2"
+
+
+# Enable logging
+logger:
+  level: DEBUG
+# Enable Home Assistant API
+api:
+  password: ""
+
+ota:
+  password: ""
+
+wifi:
+  ssid: "fox_2GEXT"
+  password: "12345678and"
+  fast_connect: on
+  power_save_mode: none
+  # Enable fallback hotspot (captive portal) in case wifi connection fails
+  ap:
+    ssid: "Victron Test Hotspot"
+
+
+time:
+  - platform: homeassistant
+
+uart:
+  id: uart0
+  tx_pin: 25
+  rx_pin: 26
+  baud_rate: 19200
+  stop_bits: 1
+  data_bits: 8
+  parity: NONE
+  rx_buffer_size: 256
+
+victron_smart_shunt:
+  uart_id: uart0
+i2c:
+   - id: bus_a
+     sda: 12
+     scl: 14
+     scan: true
+     frequency: 100kHz
+# 1 wire config
+dallas:
+  - pin: 23
+  
+
+sx1509:
+  - id: sx1509_hub
+    address: 0x3E
+
+#sensors
+sensor:
+  - platform: wifi_signal
+    name: "${devicename} WiFi Signal Sensor"
+    id: rssi_sensor
+    update_interval: 15s
+
+  - platform: template
+    name: "Wifi Quality"
+    unit_of_measurement: "%"
+    accuracy_decimals: 0
+    icon: "mdi:wifi"
+    update_interval: 15s
+    lambda: |-
+        int quality;
+        const int rssi = id(rssi_sensor).state;
+          if (rssi <= -100) { quality = 0;}
+          else if (rssi >= -50)
+          {  quality = 100; }
+          else
+          {  quality = 2 * (rssi + 100); }
+          return quality;
+
+  - platform: uptime
+    name: "${devicename} Uptime"
+    id: uptime_s
+    update_interval: 5s
+
+  - platform: victron_smart_shunt
+    battery_voltage:
+      name: "Battery Voltage"
+      id: bv
+      accuracy_decimals: ${accuracy}
+
+    battery_current:
+      name: "Battery Current"
+      id: bc
+      accuracy_decimals: ${accuracy}
+
+    fw_version:
+      name: "ShartShunt Firmware Version"
+      id: fw
+
+    pid:
+      name: "SmartShunt PID"
+      id: pid
+
+    instanteneous_power:
+      name: "Instanteneous Power"
+      id: instantaneous_power
+      accuracy_decimals: ${accuracy}
+
+    time_to_go:
+      name: "Time to Full Charge"
+      id: time_to_go
+
+    consumed_amp_hours:
+      name: "Consumed Amp Hours"
+      id: consumed_amp_hours
+      unit_of_measurement: Ah
+      accuracy_decimals: ${accuracy}
+
+    min_battery_voltage:
+      name: "Min Battery Voltage"
+      id: min_battery_voltage
+      accuracy_decimals: ${accuracy}
+
+    max_battery_voltage:
+      name: "Max Battery Voltage"
+      id: max_battery_voltage
+      accuracy_decimals: ${accuracy}
+
+    amount_of_charged:
+      name: "Amount of Charge"
+      id: amount_of_charged
+      filters:
+        - multiply: 0.001
+      unit_of_measurement: kWh
+      accuracy_decimals: ${accuracy}
+
+    bmv_text:
+      name: "Product"
+      id: bmv_pid
+
+    last_full_charge:
+      name: "Time Since Last Full Charge"
+      id: last_full_charge
+
+    deepest_discharge:
+      name: "Depth of Deepest Discharge"
+      id: deepest_discharge
+      unit_of_measurement: Ah
+      accuracy_decimals: ${accuracy}
+
+    last_discharge:
+      name: "Depth of Last Discharge"
+      id: last_discharge
+      unit_of_measurement: Ah
+      accuracy_decimals: ${accuracy}
+
+    discharged_energy:
+      name: "Amount of Discharged Energy"
+      id: discharged_energy
+      filters:
+        - multiply: 0.001
+      unit_of_measurement: kWh
+      accuracy_decimals: ${accuracy}
+
+    state_of_charge:
+      id: state_of_charge
+      name: "SoC"
+
+    alarm_reason:
+      id: alarm_reason
+      name: "Alarm Reason Code"
+
+    alarm_reason_text:
+      id: alarm_reason_text
+      name: "Alarm Reason Text"
+
+    depth_of_average_discharge:
+      id:  depth_of_average_discharge
+      name: "Depth of Average Discharge"
+
+    cumulative_amp_hours_drawn:
+      id: cumulative_amp_hours_drawn
+      name: "Cumulative Amp Hours Drawn"
+      accuracy_decimals: ${accuracy}
+
+    number_of_automatic_synchronizations:
+      id: number_of_automatic_synchronizations
+      name: "# of Automatic Sychronizations"
+      accuracy_decimals: 0
+
+    number_of_low_main_voltage_alarms:
+      id: number_of_low_main_voltage_alarms
+      name: "# of Low Voltage Alarms"
+      accuracy_decimals: 0
+
+    number_of_high_main_voltage_alarms:
+      id: number_of_high_main_voltage_alarms
+      name: "# of High Voltage Alarms"
+      accuracy_decimals: 0
+
+  - platform: bme280
+    i2c_id: bus_a
+    temperature:
+      name: "BME280 Temperature"
+      oversampling: 16x
+    pressure:
+      name: "BME280 Pressure"
+    humidity:
+      name: "BME280 Humidity"
+    address: 0x76
+    update_interval: 1s
+# gyro/accel
+  - platform: mpu6050
+    id: gyro_accel
+    address: 0x68
+    i2c_id: bus_a
+    update_interval: 1s
+    accel_x:
+      name: "MPU6050 Accel X"
+    accel_y:
+      name: "MPU6050 Accel Y"
+    accel_z:
+      name: "MPU6050 Accel z"
+    gyro_x:
+      name: "MPU6050 Gyro X"
+    gyro_y:
+      name: "MPU6050 Gyro Y"
+    gyro_z:
+      name: "MPU6050 Gyro z"
+    temperature:
+      name: "MPU6050 Temperature"
+    yaw:
+      name: "MPU6050 Yaw"
+    pitch:
+      name: "MPU6050 Pitch"
+    roll:
+      name: "MPU6050 Roll"
+# Temp Sensors
+  - platform: dallas
+    address: 0x28375875D0013C34
+    name: "Coolant Temp"
+  - platform: dallas
+    address: 0x28900475D0013C59
+    name: "Garage Temp"
+  - platform: dallas
+    address: 0x28F48175D0013C5F
+    name: "Outside Temp"
+  - platform: dallas
+    address: 0x281319F30C0000D1
+    name: "Freshwater Tank Temp"
+  - platform: dallas
+    address: 0x28BC0475D0013C92
+    name: "Hot Water Temp"
+  - platform: dallas
+    address: 0x28973C75D0013C66
+    name: "House Battery Temp"
+
+  - platform: adc
+    pin: 34
+    id: freshwater_adc
+    name: "Freshwater Tank ADC"
+    attenuation: 11db
+    update_interval: never
+
+  - platform: tank_level_sensor
+    id: freshwater_level_sensor
+    name: "Freshwater Tank Level"
+    adc_sensor: freshwater_adc
+    tank_capacity: 25.0
+    output_pin: 32
+    margin_percent: .10
+    update_interval: 5s
+    percent_full:
+      id: sensor_percent
+      name: "Freshwater Percent Left"
+    amount_left:
+      id: sensor_amt_left
+      name: "Freshwater Remaining"
+    tank_levels:
+      - voltage: 1.15
+        percent_full: 0
+      - voltage: 1.46
+        percent_full: 25
+      - voltage: 1.58
+        percent_full: 50
+      - voltage: 1.75
+        percent_full: 75
+      - voltage: 2.1
+        percent_full: 100
+  - platform: adc
+    pin: 35
+    id: graywater_adc
+    name: "Graywater Tank ADC"
+    attenuation: 11db
+    update_interval: never
+  - platform: tank_level_sensor
+    id: graywater_level_sensor
+    name: "Graywater Tank Level"
+    adc_sensor: graywater_adc
+    tank_capacity: 20.0
+    output_pin: 33
+    margin_percent: .10
+    update_interval: 5s
+    percent_full:
+      id: sensor_percent_grey
+      name: "Graywater Percent Full"
+    amount_left:
+      id: sensor_amt_left_grey
+      name: "Greywater Used"
+    tank_levels:
+      - voltage: .9
+        percent_full: 0
+      - voltage: 1.4
+        percent_full: 25
+      - voltage: 1.5
+        percent_full: 50
+      - voltage: 1.74
+        percent_full: 75
+      - voltage: 2.1
+        percent_full: 100
+ # water flow sensor
+  - platform: pulse_counter
+    name: "Water Flow Rate"
+    id: water_flow_meter
+    pin: 18
+    update_interval: 1s
+    filters:
+    - lambda: return (x * 60 / 480)  ;
+    unit_of_measurement: "L/min"  
+    total:
+      unit_of_measurement: "L"
+      name: "Water Used"
+      filters:
+        - multiply: 0.01666666666
+text_sensor:
+  - platform: template
+    name: "Config Version"
+    icon: mdi:information-outline
+    lambda: |-
+      return {"${config_version}"};
+
+  - platform: version
+    name: "Esphome Version"
+    icon: mdi:information-outline
+
+  - platform: wifi_info
+    ip_address:
+      name: "${devicename} IP Address"
+      icon: mdi:ip
+    ssid:
+      name: "${devicename} Connected SSID"
+      icon: mdi:wifi
+    bssid:
+      name: "${devicename} Connected BSSID"
+    mac_address:
+      name: "${devicename} Mac Wifi Address"
+
+  - platform: template
+    name: "${devicename} Uptime (formatted)"
+    lambda: |-
+          uint32_t dur = id(uptime_s).state;
+          uint dys = 0;
+          uint hrs = 0;
+          uint mnts = 0;
+          if (dur > 86399) {
+            dys = trunc(dur / 86400);
+            dur = dur - (dys * 86400);
+          }
+          if (dur > 3599) {
+            hrs = trunc(dur / 3600);
+            dur = dur - (hrs * 3600);
+          }
+          if (dur > 59) {
+            mnts = trunc(dur / 60);
+            dur = dur - (mnts * 60);
+          }
+          char buffer[22];
+          sprintf(buffer, "%ud %02uh %02um %02us", dys, hrs, mnts, dur);
+          return {buffer};
+    icon: mdi:clock-start
+    update_interval: 5s
+ 
+button:
+  - platform: template
+    id: btn_calibrate
+    name: "Calibrate Tilt Sensor"
+    on_press:
+      then:
+      - logger.log: "Button Pressed"
+      - lambda: |-
+          id(gyro_accel).calibrate(true,true);
+switch:
+  - platform: restart
+    icon: mdi:reload-alert
+    name: "${devicename} Restart"
+#sx1509 outputs
+  - platform: gpio
+    name: "Battery Heater"
+    pin:
+      sx1509: sx1509_hub
+      number: 0
+      mode:
+        output: true
+      inverted: false
+  - platform: gpio
+    name: "Diesel Heater"
+    pin:
+      sx1509: sx1509_hub
+      number: 1
+      mode:
+        output: true
+      inverted: false
+  - platform: gpio
+    name: "Audio"
+    pin:
+      sx1509: sx1509_hub
+      number: 2
+      mode:
+        output: true
+      inverted: false
+  - platform: gpio
+    name: "Shower Fan"
+    pin:
+      sx1509: sx1509_hub
+      number: 3
+      mode:
+        output: true
+      inverted: false
+  - platform: gpio
+    name: "Coolant Circ Pump"
+    pin:
+      sx1509: sx1509_hub
+      number: 4
+      mode:
+        output: true
+      inverted: false
+  - platform: gpio
+    name: "Heater Fan - Low"
+    id: heater_fan_low
+    interlock: &interlock_group [heater_fan_low, heater_fan_medium, heater_fan_high]
+    pin:
+      sx1509: sx1509_hub
+      number: 5
+      mode:
+        output: true
+      inverted: false
+  - platform: gpio
+    name: "Heater Fan - Medium"
+    id: heater_fan_medium
+    interlock: *interlock_group
+    pin:
+      sx1509: sx1509_hub
+      number: 6
+      mode:
+          output: true
+      inverted: false
+  - platform: gpio
+    name: "Heater Fan - High"
+    id: heater_fan_high
+    interlock: *interlock_group
+    pin:
+      sx1509: sx1509_hub
+      number: 7
+      mode:
+        output: true
+      inverted: false
+  - platform: gpio
+    name: "Valve Water Heater"
+    pin:
+      sx1509: sx1509_hub
+      # Use pin number  on the SX1509
+      number: 8
+      mode:
+        output: true
+      inverted: false
+  - platform: gpio
+    name: "Valve Rear Heater"
+    pin:
+      sx1509: sx1509_hub
+      # Use pin number  on the SX1509
+      number: 9
+      mode:
+        output: true
+      inverted: false
+  - platform: gpio
+    name: "Valve HW Bypass"
+    pin:
+      sx1509: sx1509_hub
+      # Use pin number  on the SX1509
+      number: 10
+      mode:
+        output: true
+      inverted: false
+  - platform: gpio
+    name: "Valve Coolant Recirculator"
+    pin:
+      sx1509: sx1509_hub
+      number: 11
+      mode:
+        output: true
+      inverted: false
+
+output: 
+  - platform: sx1509
+    sx1509_id: sx1509_hub
+    id: pwm_1
+    pin: 12
+  - platform: sx1509
+    sx1509_id: sx1509_hub
+    id: pwm_2
+    pin: 13
+  - platform: sx1509
+    sx1509_id: sx1509_hub
+    id: pwm_3
+    pin: 14
+  - platform: sx1509
+    sx1509_id: sx1509_hub
+    id: pwm_4
+    pin: 15
+
+  - platform: ledc
+    frequency: "1220Hz"
+    pin: 19
+    id: pwm_5
+  - platform: ledc
+    frequency: "1220Hz"
+    pin: 18
+    id: pwm_6
+  - platform: ledc
+    frequency: "1220Hz"
+    pin: 5
+    id: pwm_7
+  - platform: ledc
+    frequency: "1220Hz"
+    pin: 15
+    id: pwm_8
+
+    
+   
+light: 
+  - platform: monochromatic
+    name: "Lights Bed"
+    id: light1
+    output: pwm_1
+  - platform: monochromatic
+    name: "Lights Garage"
+    id: light2
+    output: pwm_2
+  - platform: monochromatic
+    name: "Lights Bath"
+    id: light3
+    output: pwm_3
+  - platform: monochromatic
+    name: "Lights Hall"
+    id: light4
+    output: pwm_4
+  - platform: monochromatic
+    name: "Lights Kitchen"
+    id: light5
+    output: pwm_5
+  - platform: monochromatic
+    name: "Lights Porch"
+    id: light6
+    output: pwm_6
+  - platform: monochromatic
+    name: "Light 7"
+    id: light7
+    output: pwm_7
+  - platform: monochromatic
+    name: "Light 8"
+    id: light8
+    output: pwm_8
+
+binary_sensor:
+  - platform: gpio
+    name: "Button Kitchen Outside"
+    id: btn_1
+    pin: 
+      number: 27
+      mode:
+        input: true
+        pullup: true
+    filters:
+      - delayed_on: 10ms
+  - platform: gpio
+    name: "Button Kitchen"
+    id: btn_2
+    pin: 
+      number: 13
+      mode:
+        input: true
+        pullup: true
+    filters:
+      - delayed_on: 10ms
+  - platform: gpio
+    name: "Button Kitchen Mood"
+    id: btn_3
+    pin: 
+      number: 22
+      mode:
+        input: true
+        pullup: true
+    filters:
+      - delayed_on: 10ms
+  - platform: gpio
+    name: "Button Shower Light"
+    id: btn_4
+    pin: 
+      number: 21
+      mode:
+        input: true
+        pullup: true
+    filters:
+      - delayed_on: 10ms
+  - platform: gpio
+    name: "Button Shower Fan"
+    id: btn_5
+    pin: 
+      number: 4
+      mode:
+        input: true
+        pullup: true
+    filters:
+      - delayed_on: 10ms
+  - platform: gpio
+    name: "Button Bed"
+    id: btn_6
+    pin: 
+      number: 0
+      mode:
+        input: true
+        pullup: true
+    filters:
+      - delayed_on: 10ms
+  - platform: gpio
+    name: "Button Sink"
+    id: btn_7
+    pin: 
+      number: 2
+      mode:
+        input: true
+        pullup: true
+    filters:
+      - delayed_on: 10ms

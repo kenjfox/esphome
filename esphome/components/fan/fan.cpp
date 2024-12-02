@@ -18,6 +18,7 @@ const LogString *fan_direction_to_string(FanDirection direction) {
 }
 
 void FanCall::perform() {
+  ESP_LOGD(TAG, "fancall perform");
   ESP_LOGD(TAG, "'%s' - Setting:", this->parent_.get_name().c_str());
   this->validate_();
   if (this->binary_state_.has_value()) {
@@ -39,6 +40,7 @@ void FanCall::perform() {
 }
 
 void FanCall::validate_() {
+  ESP_LOGD(TAG, "fancall validating");
   auto traits = this->parent_.get_traits();
 
   if (this->speed_.has_value())
@@ -77,6 +79,7 @@ void FanCall::validate_() {
 }
 
 FanCall FanRestoreState::to_call(Fan &fan) {
+  ESP_LOGD(TAG, "to_Call");
   auto call = fan.make_call();
   call.set_state(this->state);
   call.set_oscillating(this->oscillating);
@@ -93,6 +96,7 @@ FanCall FanRestoreState::to_call(Fan &fan) {
   return call;
 }
 void FanRestoreState::apply(Fan &fan) {
+  ESP_LOGD(TAG, "Apply");
   fan.state = this->state;
   fan.oscillating = this->oscillating;
   fan.speed = this->speed;
@@ -113,7 +117,10 @@ FanCall Fan::turn_off() { return this->make_call().set_state(false); }
 FanCall Fan::toggle() { return this->make_call().set_state(!this->state); }
 FanCall Fan::make_call() { return FanCall(*this); }
 
-void Fan::add_on_state_callback(std::function<void()> &&callback) { this->state_callback_.add(std::move(callback)); }
+void Fan::add_on_state_callback(std::function<void()> &&callback) {
+  ESP_LOGD(TAG, "add_on_state_callback");
+  this->state_callback_.add(std::move(callback));
+}
 void Fan::publish_state() {
   auto traits = this->get_traits();
 
@@ -132,16 +139,19 @@ void Fan::publish_state() {
     ESP_LOGD(TAG, "  Preset Mode: %s", this->preset_mode.c_str());
   }
   this->state_callback_.call();
+  ESP_LOGD(TAG, "saving state...");
   this->save_state_();
+  ESP_LOGD(TAG, "saved state");
 }
 
 // Random 32-bit value, change this every time the layout of the FanRestoreState struct changes.
 constexpr uint32_t RESTORE_STATE_VERSION = 0x71700ABA;
 optional<FanRestoreState> Fan::restore_state_() {
+  ESP_LOGD(TAG, "restore_state");
   FanRestoreState recovered{};
   this->rtc_ = global_preferences->make_preference<FanRestoreState>(this->get_object_id_hash() ^ RESTORE_STATE_VERSION);
   bool restored = this->rtc_.load(&recovered);
-
+  ESP_LOGD(TAG, "loaded restored");
   switch (this->restore_mode_) {
     case FanRestoreMode::NO_RESTORE:
       return {};
@@ -183,6 +193,7 @@ void Fan::save_state_() {
   }
 
   this->rtc_.save(&state);
+  ESP_LOGD(TAG, "saved via rtc_save");
 }
 
 void Fan::dump_traits_(const char *tag, const char *prefix) {

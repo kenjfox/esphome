@@ -1,0 +1,10 @@
+# fans 
+
+fan:   
+  - platform: binary
+    id: shower_fan
+    name: "Shower Fan"
+    restore_mode: RESTORE_DEFAULT_OFF
+    output: highside_switch_1
+    
+
